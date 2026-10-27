@@ -89,3 +89,12 @@ def test_path_map(tmp_path: Path):
     assert map_path("/data/tvshows/ep.mkv", raw) is None  # prefix must end at a separator
     assert map_path(str(local / "ep.mkv"), "") == local / "ep.mkv"
     assert map_path(None, raw) is None
+
+
+def test_empty_or_unreadable_subtitle_files_have_no_dialogue(tmp_path: Path):
+    empty = tmp_path / "empty.srt"
+    empty.write_text("")
+    junk = tmp_path / "junk.srt"
+    junk.write_text("this is not a subtitle file")
+    assert load_clean_subtitles(empty) == ""
+    assert load_clean_subtitles(junk) == ""

@@ -30,12 +30,16 @@ _SPEAKER = re.compile(r"^([A-Z][A-Z0-9 .'\-]{1,30}):\s*(.*)$")
 
 
 def _load(path: Path) -> pysubs2.SSAFile:
+    if path.stat().st_size == 0:
+        return pysubs2.SSAFile()  # ffmpeg writes an empty file for a track with no cues
     last_error: Exception | None = None
     for encoding in ("utf-8-sig", "cp1252", "latin-1"):
         try:
             return pysubs2.load(str(path), encoding=encoding)
         except UnicodeDecodeError as exc:
             last_error = exc
+        except pysubs2.exceptions.FormatAutodetectionError:
+            return pysubs2.SSAFile()  # not a subtitle format we can read: no dialogue
     raise ValueError(f"could not decode {path}") from last_error  # pragma: no cover
 
 

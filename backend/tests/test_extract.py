@@ -29,11 +29,11 @@ def make_video(tmp_path: Path, tracks: list[tuple[list[str], str, str]]) -> Path
         "-f",
         "lavfi",
         "-i",
-        "color=c=black:s=64x64:d=3",
+        "color=c=black:s=32x32:r=1:d=200",
         "-f",
         "lavfi",
         "-i",
-        "sine=frequency=440:duration=3",
+        "sine=frequency=440:duration=200",
     ]
     for i, (lines, _lang, _disp) in enumerate(tracks):
         srt = tmp_path / f"in{i}.srt"
@@ -45,7 +45,7 @@ def make_video(tmp_path: Path, tracks: list[tuple[list[str], str, str]]) -> Path
     for i, (_lines, lang, disp) in enumerate(tracks):
         cmd += [f"-metadata:s:s:{i}", f"language={lang}", f"-disposition:s:{i}", disp]
     out = tmp_path / "Show.S01E01.mkv"
-    cmd += ["-c:v", "libx264", "-c:a", "aac", "-c:s", "srt", "-shortest", str(out)]
+    cmd += ["-c:v", "libx264", "-c:a", "aac", "-c:s", "srt", str(out)]
     subprocess.run(cmd, check=True, capture_output=True)
     return out
 
@@ -64,7 +64,7 @@ def test_embedded_english_track_is_chosen_over_forced_and_foreign(tmp_path):
     assert tracks[1].forced and not tracks[2].forced
     ranked = extract.rank_subtitle_tracks(tracks, ["en", "eng"])
     assert [t.position for t in ranked] == [2]
-    result = resolve_source(str(video), 3 * 60000, Settings(whisper_enabled=False))
+    result = resolve_source(str(video), 200_000, Settings(whisper_enabled=False))
     assert result.source_type == "embedded"
     assert result.text.splitlines()[0] == "Walt: This is line 0 of the real English dialogue track."
 
