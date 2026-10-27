@@ -478,6 +478,7 @@ async function pageCharacters() {
   tbody.innerHTML = data.characters.map((c, i) => `
     <tr data-i="${i}" data-search="${escapeHtml([c.name, ...c.aliases].join(" ").toLowerCase())}">
       <td><span class="name">${escapeHtml(c.name)}</span>${c.aliases.length ? `<span class="sub">also ${escapeHtml(c.aliases.join(", "))}</span>` : ""}</td>
+      <td class="muted">${escapeHtml(c.actor || "")}</td>
       <td>${escapeHtml(c.role || "")}</td>
       <td>${statusLabel(c.status)}</td>
       <td class="code">${escapeHtml(c.first_seen === c.last_seen ? c.first_seen : `${c.first_seen}–${c.last_seen}`)}</td>
@@ -492,7 +493,7 @@ async function pageCharacters() {
     if (!next || !next.classList.contains("detail-row")) {
       next = document.createElement("tr");
       next.className = "detail-row";
-      next.innerHTML = '<td colspan="5"></td>';
+      next.innerHTML = '<td colspan="6"></td>';
       tr.after(next);
     }
     return $("td", next);
@@ -544,15 +545,17 @@ async function pageLibrary() {
       : "No shows yet. Press Sync to read your Plex library.";
     tbody.innerHTML = list.map((s) => {
       const st = s.stats;
-      const done = st.episodes && st.summarized >= st.episodes;
+      const done = st.episodes && st.summarized >= st.episodes && !st.outdated;
+      const update = st.episodes && st.summarized >= st.episodes;
       return `
       <tr>
         <td><span class="title-link">${escapeHtml(s.title)}</span>${s.year ? ` <span class="muted">(${s.year})</span>` : ""}</td>
         <td class="col-progress">${progressBar(st.with_source, st.episodes)}</td>
-        <td class="col-progress">${progressBar(st.summarized, st.episodes)}</td>
+        <td class="col-progress">${progressBar(st.summarized, st.episodes)}${st.outdated
+          ? `<span class="sub" title="Written before your TMDB key or a newer prompt. Index redoes them.">${st.outdated} outdated</span>` : ""}</td>
         <td class="num">${st.rollups} / ${st.seasons}</td>
         <td class="col-actions">${done ? `<span class="label label-success">Indexed</span>`
-          : `<button class="btn btn-small" type="button" data-index="${s.id}">${icon("index")}Index</button>`}</td>
+          : `<button class="btn btn-small" type="button" data-index="${s.id}">${icon("index")}${update ? "Update" : "Index"}</button>`}</td>
       </tr>`;
     }).join("");
   };

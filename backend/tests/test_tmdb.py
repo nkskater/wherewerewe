@@ -137,3 +137,56 @@ def test_dialogue_mode_gives_the_model_credited_names(tmp_path, monkeypatch, fak
     assert "Characters credited in this episode" in prompt
     assert "Walter White" in prompt and "Jesse Pinkman" in prompt
     assert "Hank Schrader" not in prompt  # credited, but not in this episode's text
+
+
+def test_adding_a_tmdb_key_makes_older_summaries_outdated(tmp_path, monkeypatch, fake_llm):
+    monkeypatch.setattr(indexing, "TMDBClient", FakeTMDB)
+    with session_scope() as session:
+        show_id = import_folder(session, make_show(tmp_path), "The Show")["show_id"]
+        settings = load_settings(session)
+        for ep in regular_episodes(session, show_id):
+            index_episode(session, settings, ep.id)
+        assert indexing.show_stats(session, show_id, settings)["outdated"] == 0
+        assert indexing.queue_show_index(session, show_id, scope="all", settings=settings) == 0
+
+    monkeypatch.setenv("TMDB_API_KEY", "k" * 32)
+    with session_scope() as session:
+        settings = load_settings(session)
+        assert indexing.show_stats(session, show_id, settings)["outdated"] == 5
+        assert indexing.queue_show_index(session, show_id, scope="all", settings=settings) == 5
+        first = regular_episodes(session, show_id)[0]
+        assert "summarized from" in index_episode(session, settings, first.id)
+        assert index_episode(session, settings, first.id).endswith("already summarized")
+        assert indexing.show_stats(session, show_id, settings)["outdated"] == 4
+
+
+def test_shows_not_on_tmdb_are_not_outdated_forever(tmp_path, monkeypatch, fake_llm):
+    class NotFound(FakeTMDB):
+        def find_show(self, title, year=None):
+            return None
+
+    monkeypatch.setenv("TMDB_API_KEY", "k" * 32)
+    monkeypatch.setattr(indexing, "TMDBClient", NotFound)
+    with session_scope() as session:
+        show_id = import_folder(session, make_show(tmp_path), "The Show")["show_id"]
+        settings = load_settings(session)
+        for ep in regular_episodes(session, show_id):
+            index_episode(session, settings, ep.id)
+        assert indexing.show_stats(session, show_id, settings)["outdated"] == 0
+
+
+def test_characters_show_who_plays_them_up_to_the_boundary(tmp_path, monkeypatch):
+    monkeypatch.setenv("SUMMARY_SOURCE", "synopsis")
+    monkeypatch.setenv("TMDB_API_KEY", "k" * 32)
+    monkeypatch.setattr(indexing, "TMDBClient", FakeTMDB)
+    with session_scope() as session:
+        show_id = import_folder(session, make_show(tmp_path), "The Show")["show_id"]
+        settings = load_settings(session)
+        for ep in regular_episodes(session, show_id):
+            index_episode(session, settings, ep.id)
+        actors = indexing.actors_as_of(session, show_id, (1, 2))
+        assert "krazy-8" not in actors  # first credited in S01E03
+        people = {e.name: e for e in ledger_as_of(session, show_id, (1, 3))}
+        actors = indexing.actors_as_of(session, show_id, (1, 3))
+        assert indexing.played_by(people["Walter White"], actors) == "Actor One"
+        assert indexing.played_by(people["Krazy-8"], actors) == "Guest Actor"

@@ -175,6 +175,10 @@ With a TMDB key, each watched episode's synopsis and credited cast are fetched o
 character names. In `synopsis` mode the summary is built from them directly, with no model
 call: a 200-episode show indexes in about a minute. Credits are read per episode, and a
 series regular only counts once that episode mentions them, so names don't arrive early.
+The Characters page shows who plays each character, using credits up to where you are.
+
+Episodes summarized before you added the key are marked outdated in Library. Press
+**Update** on a show to redo them with the cast list (this uses the GPU in `dialogue` mode).
 
 ## Command line
 

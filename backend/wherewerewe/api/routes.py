@@ -22,7 +22,7 @@ from ..llm import prompts
 from ..llm.client import LLMError, get_llm
 from ..llm.ledger import ledger_as_of, ledger_notes
 from ..models import Episode, Job, Recap, Setting, Show, User, WatchProgress
-from ..services.indexing import show_stats
+from ..services.indexing import actors_as_of, played_by, show_stats
 from ..services.library import episode_by_code, regular_episodes
 from ..services.progress import boundary_episode, shows_in_progress
 from ..services.recaps import RecapRequestError, create_recap
@@ -126,7 +126,7 @@ def user_shows(
 # -- shows -------------------------------------------------------------------------------
 
 
-def _show_json(session: Session, show: Show) -> dict:
+def _show_json(session: Session, show: Show, settings: Settings | None = None) -> dict:
     return {
         "id": show.id,
         "title": show.title,
@@ -134,7 +134,7 @@ def _show_json(session: Session, show: Show) -> dict:
         "tmdb_id": show.tmdb_id,
         "has_poster": bool(show.poster_url),
         "source": "folder" if show.local_path else "plex",
-        "stats": show_stats(session, show.id),
+        "stats": show_stats(session, show.id, settings or load_settings(session)),
     }
 
 
@@ -143,7 +143,8 @@ def list_shows(session: Session = Depends(get_session), watched_only: bool = Fal
     query = select(Show).order_by(func.lower(Show.title))
     if watched_only:
         query = query.where(Show.id.in_(select(WatchProgress.show_id)))
-    return [_show_json(session, s) for s in session.scalars(query)]
+    settings = load_settings(session)
+    return [_show_json(session, s, settings) for s in session.scalars(query)]
 
 
 @router.get("/shows/{show_id}")
@@ -244,9 +245,10 @@ def characters(
             for e in entries
             if needle in e.name.lower() or any(needle in a.lower() for a in e.aliases)
         ]
+    actors = actors_as_of(session, show_id, boundary)
     return {
         "as_of": f"S{boundary[0]:02d}E{boundary[1]:02d}",
-        "characters": [e.__dict__ for e in entries],
+        "characters": [{**e.__dict__, "actor": played_by(e, actors)} for e in entries],
     }
 
 

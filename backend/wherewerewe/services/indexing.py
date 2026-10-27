@@ -56,6 +56,10 @@ def _fill_tmdb(session: Session, settings: Settings, show: Show, members: list[E
             if show.tmdb_id is None:
                 show.tmdb_id = client.find_show(show.title, show.year)
             if show.tmdb_id is None:
+                # Not on TMDB: note that we looked, so these don't count as outdated forever.
+                for m in missing:
+                    session.add(EpisodeCast(episode_id=m.id, cast_json=[]))
+                session.flush()
                 return
             for m in missing:
                 data = client.episode(show.tmdb_id, m.season, m.episode) or {}
@@ -66,6 +70,65 @@ def _fill_tmdb(session: Session, settings: Settings, show: Show, members: list[E
             client.close()
     except Exception as exc:  # TMDB is supplementary; never fail indexing over it
         log.warning("TMDB lookup failed for %s: %s", show.title, exc)
+
+
+def _without_cast(session: Session, episode_ids: list[int]) -> set[int]:
+    if not episode_ids:
+        return set()
+    have = set(
+        session.scalars(
+            select(EpisodeCast.episode_id).where(EpisodeCast.episode_id.in_(episode_ids))
+        )
+    )
+    return set(episode_ids) - have
+
+
+def current_episode_ids(session: Session, settings: Settings, episode_ids: list[int]) -> set[int]:
+    """Episodes whose summary is up to date: the current model and prompt, and, once there's
+    a TMDB key, written with TMDB's cast list (so adding a key makes older ones outdated)."""
+    if not episode_ids:
+        return set()
+    done = set(
+        session.scalars(
+            select(EpisodeSummary.episode_id).where(
+                EpisodeSummary.episode_id.in_(episode_ids),
+                EpisodeSummary.model == summary_model(settings),
+                EpisodeSummary.prompt_version == prompts.SUMMARY_VERSION,
+            )
+        )
+    )
+    if settings.tmdb_api_key:
+        done -= _without_cast(session, list(done))
+    return done
+
+
+def actors_as_of(session: Session, show_id: int, boundary: tuple[int, int]) -> dict[str, str]:
+    """TMDB's character name (lowercased) -> actor, from episodes up to `boundary` only."""
+    rows = session.execute(
+        select(Episode, EpisodeCast)
+        .join(EpisodeCast, EpisodeCast.episode_id == Episode.id)
+        .where(Episode.show_id == show_id, Episode.season > 0)
+    )
+    actors: dict[str, str] = {}
+    for ep, cast in rows:
+        if ep.order_key > boundary:
+            continue
+        for person in cast.cast_json:
+            if person.get("character") and person.get("actor"):
+                actors.setdefault(person["character"].lower(), person["actor"])
+    return actors
+
+
+def played_by(entry, actors: dict[str, str]) -> str | None:
+    """The actor for a ledger character: by full name or alias, else by a unique first name."""
+    for name in [entry.name, *entry.aliases]:
+        if name.lower() in actors:
+            return actors[name.lower()]
+    first = entry.name.split()[0].lower() if entry.name.split() else ""
+    if len(first) < 3:
+        return None
+    hits = {a for c, a in actors.items() if c.split()[0] == first}
+    return hits.pop() if len(hits) == 1 else None
 
 
 def _cast(session: Session, members: list[Episode], text: str) -> list[dict]:
@@ -139,7 +202,11 @@ def index_episode(
             EpisodeSummary.prompt_version == prompts.SUMMARY_VERSION,
         )
     )
-    if existing is not None and not force:
+    # A summary written before the TMDB key was added is redone, now with the cast list.
+    needs_cast = bool(settings.tmdb_api_key) and bool(
+        _without_cast(session, [m.id for m in members])
+    )
+    if existing is not None and not force and not needs_cast:
         return f"{label}: already summarized"
 
     show = session.get(Show, ep.show_id)
@@ -247,27 +314,19 @@ def queue_show_index(
     *,
     scope: str = "watched",
     force: bool = False,
-    model: str | None = None,
+    settings: Settings | None = None,
 ) -> int:
-    """Queue index_episode jobs. scope="watched" stops at the furthest any user has watched."""
+    """Queue index_episode jobs. scope="watched" stops at the furthest any user has watched.
+
+    With `settings`, episodes that are already up to date are skipped."""
     limit = max_boundary(session, show_id) if scope == "watched" else None
     if scope == "watched" and limit is None:
         return 0
-    done = set()
-    if not force and model:
-        done = set(
-            session.scalars(
-                select(EpisodeSummary.episode_id)
-                .join(Episode, Episode.id == EpisodeSummary.episode_id)
-                .where(
-                    Episode.show_id == show_id,
-                    EpisodeSummary.model == model,
-                    EpisodeSummary.prompt_version == prompts.SUMMARY_VERSION,
-                )
-            )
-        )
-    queued = 0
     episodes = [e for e in regular_episodes(session, show_id) if e.part_of_episode_id is None]
+    done = set()
+    if not force and settings is not None:
+        done = current_episode_ids(session, settings, [e.id for e in episodes])
+    queued = 0
     for ep in episodes:
         if limit is not None and ep.order_key > limit:
             continue
@@ -295,7 +354,7 @@ def active_show_ids(session: Session, days: int) -> list[int]:
     )
 
 
-def show_stats(session: Session, show_id: int) -> dict:
+def show_stats(session: Session, show_id: int, settings: Settings | None = None) -> dict:
     episodes = [e for e in regular_episodes(session, show_id) if e.part_of_episode_id is None]
     ids = [e.id for e in episodes]
     sourced = summarized = 0
@@ -329,6 +388,10 @@ def show_stats(session: Session, show_id: int) -> dict:
         "episodes": len(episodes),
         "with_source": sourced,
         "summarized": summarized,
+        # Summarized, but before a model, prompt or TMDB change; Index redoes these.
+        "outdated": summarized - len(current_episode_ids(session, settings, ids))
+        if settings is not None
+        else 0,
         "seasons": seasons,
         "rollups": rollups,
     }
