@@ -7,9 +7,17 @@ from conftest import write_srt
 from sqlalchemy import select
 
 from wherewerewe.db import load_settings, session_scope
-from wherewerewe.llm.ledger import ledger_as_of, match_character
+from wherewerewe.llm.ledger import ledger_as_of, match_character, rebuild_ledger
 from wherewerewe.llm.recap import build_context
-from wherewerewe.models import Character, Episode, EpisodeSummary, Job, Recap, SeasonRollup
+from wherewerewe.models import (
+    Character,
+    Episode,
+    EpisodeSummary,
+    Job,
+    Recap,
+    SeasonRollup,
+    Show,
+)
 from wherewerewe.services import recaps
 from wherewerewe.services.indexing import index_episode
 from wherewerewe.services.library import episode_by_code, regular_episodes
@@ -73,7 +81,7 @@ def test_ledger_is_limited_to_boundary(tmp_path, fake_llm):
     with session_scope() as session:
         early = {e.name: e for e in ledger_as_of(session, show_id, (1, 2))}
         assert set(early) == {"Walt", "Jesse"}
-        assert early["Walt"].status == "Walt status in S01E02"
+        assert early["Walt"].status == "injured"
         assert early["Walt"].last_seen == "S01E02"
         late = {e.name for e in ledger_as_of(session, show_id, (2, 2))}
         assert {"Hank", "Gus"} <= late
@@ -90,6 +98,64 @@ def test_character_matching():
     assert match_character(chars, "Martha", []) is None
     chars.append(Character(id=3, show_id=1, name="Frank Jones", aliases=[]))
     assert match_character(chars, "Frank", []) is None  # ambiguous
+
+
+def test_ledger_keeps_family_members_apart():
+    """Shared kinship words, titles and surnames must not merge different people."""
+
+    def person(name, aliases=(), status="alive"):
+        return {"name": name, "aliases": list(aliases), "role": f"{name} role", "status": status}
+
+    with session_scope() as session:
+        show = Show(title="Family")
+        session.add(show)
+        session.flush()
+        eps = [Episode(show_id=show.id, season=1, episode=n) for n in (1, 2, 3)]
+        session.add_all(eps)
+        session.flush()
+        summaries = [
+            [
+                person("Eli Gemstone", ["Daddy", "Pastor Gemstone", "Eli"]),
+                person("Jesse Gemstone", ["Daddy", "Pastor Gemstone", "Eli Gemstone"]),
+                person("Judy Gemstone", ["Mama", "Jesse"]),
+                person("Aimee-Leigh Gemstone", ["Mama", "Aimee-Leigh"], status="dead"),
+                person("Lori Milsap", ["Cobb's wife", "Miss Lori"]),
+                person("Dr. Carmichael", status="teacher"),
+            ],
+            [
+                person("Jesse"),
+                person("Kelvin", ["K"]),
+                person("Dr. Gemstone"),  # ambiguous: which Gemstone?
+                person("Jim Halpert", ["Andrew Bernard"]),
+                person("Andrew Bernard", ["Andy"]),
+            ],
+            [person("Kelvin Gemstone"), person("Carmichael", status="single")],
+        ]
+        rebuild_ledger(
+            session, show.id, [(e, {"characters": s}) for e, s in zip(eps, summaries, strict=True)]
+        )
+        entries = {e.name: e for e in ledger_as_of(session, show.id, (1, 3))}
+
+        assert sorted(entries) == [
+            "Aimee-Leigh Gemstone",
+            "Andrew Bernard",
+            "Carmichael",
+            "Eli Gemstone",
+            "Jesse",
+            "Jim Halpert",
+            "Judy Gemstone",
+            "Kelvin Gemstone",
+            "Lori Milsap",
+        ]
+        assert entries["Jesse"].aliases == ["Jesse Gemstone"]
+        assert entries["Eli Gemstone"].aliases == ["Eli"]
+        assert entries["Judy Gemstone"].aliases == []
+        assert entries["Lori Milsap"].aliases == ["Miss Lori"]
+        assert entries["Jim Halpert"].aliases == []
+        assert entries["Kelvin Gemstone"].aliases == ["Kelvin", "K"]
+        assert entries["Aimee-Leigh Gemstone"].status == "dead"
+        assert entries["Carmichael"].status is None  # "teacher", "single" aren't statuses
+        assert entries["Carmichael"].appearances == 2
 
 
 def test_multi_episode_file_is_summarized_once(tmp_path, fake_llm):

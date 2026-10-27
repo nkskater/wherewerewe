@@ -12,7 +12,7 @@ from sqlalchemy.orm import Session
 from ..config import Settings
 from ..llm import prompts
 from ..llm.client import LLM, get_llm
-from ..llm.ledger import update_ledger
+from ..llm.ledger import rebuild_ledger, update_ledger
 from ..llm.rollup import season_episode_summaries
 from ..llm.summarize import summarize_episode
 from ..models import (
@@ -26,7 +26,7 @@ from ..models import (
 from ..sources.resolver import NoSourceError, resolve_source
 from ..sources.tmdb import TMDBClient
 from ..worker import queue
-from .library import group_label, group_members, regular_episodes
+from .library import current_summary, group_label, group_members, regular_episodes
 
 log = logging.getLogger(__name__)
 
@@ -135,6 +135,9 @@ def index_episode(
         log.info("%s %s: no dialogue (%s); summarizing from the synopsis", show.title, label, exc)
         source_type, text, detail = "overview", None, "synopsis only"
 
+    # Release the write lock before the slow model call, so a recap or another lane can
+    # write meanwhile (SQLite allows one writer at a time).
+    session.commit()
     summary = summarize_episode(llm, label, overview, text).model_dump()
     if existing is None:
         existing = EpisodeSummary(
@@ -152,6 +155,28 @@ def index_episode(
     update_ledger(session, ep, summary)
     maybe_enqueue_rollup(session, ep.show_id, ep.season, llm.model)
     return f"{label}: summarized from {detail}"
+
+
+def rebuild_ledgers(session: Session, settings: Settings) -> int:
+    """Rebuild every show's character ledger from its cached summaries. Returns shows done."""
+    show_ids = list(
+        session.scalars(
+            select(Episode.show_id)
+            .join(EpisodeSummary, EpisodeSummary.episode_id == Episode.id)
+            .distinct()
+        )
+    )
+    for show_id in show_ids:
+        pairs = []
+        for ep in regular_episodes(session, show_id):
+            if ep.part_of_episode_id:
+                continue
+            row = current_summary(session, ep.id, settings.llm_model, prompts.SUMMARY_VERSION)
+            if row is not None:
+                pairs.append((ep, row.summary_json))
+        rebuild_ledger(session, show_id, pairs)
+        session.commit()
+    return len(show_ids)
 
 
 def maybe_enqueue_rollup(session: Session, show_id: int, season: int, model: str) -> None:

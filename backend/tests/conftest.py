@@ -60,7 +60,7 @@ class FakeLLM:
                             "name": s,
                             "aliases": [],
                             "role": f"{s} role",
-                            "status": f"{s} status in {code}",
+                            "status": "injured" if code == "S01E02" else "alive",
                             "new_info": f"{s} news in {code}",
                             "relationships": [],
                         }

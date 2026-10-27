@@ -8,7 +8,7 @@ from __future__ import annotations
 
 from pydantic import BaseModel, Field
 
-SUMMARY_VERSION = "summary-v1"
+SUMMARY_VERSION = "summary-v2"
 ROLLUP_VERSION = "rollup-v1"
 RECAP_VERSION = "recap-v1"
 VERIFY_VERSION = "verify-v1"
@@ -22,14 +22,25 @@ GROUNDING = (
 
 
 class CharacterUpdate(BaseModel):
-    name: str = Field(description="Name as used in this episode")
+    name: str = Field(description="Their fullest name as used in this episode")
     aliases: list[str] = Field(
-        default_factory=list, description="Other names or nicknames used for them here"
+        default_factory=list,
+        description=(
+            "Other names THIS SAME person goes by here: first name, surname, nickname. "
+            "Never kinship or pet words (Mom, Daddy, honey), never another character's name, "
+            "never a description. Usually empty"
+        ),
     )
     role: str = Field(
         default="", description="Who they are in the story, e.g. 'FBI agent, Stan's boss'"
     )
-    status: str = Field(default="", description="Their situation at the end of the episode")
+    # Plain str so unconstrained endpoints still parse; the enum constrains decoding where
+    # supported, and the ledger normalizes whatever comes back.
+    status: str = Field(
+        default="alive",
+        description="Physical state at the end of the episode; jobs and relationships go in role",
+        json_schema_extra={"enum": ["alive", "dead", "missing", "in custody", "injured"]},
+    )
     new_info: str = Field(default="", description="What we learned about them in this episode")
     relationships: list[str] = Field(
         default_factory=list, description="Relationships shown, e.g. 'married to Elizabeth'"
@@ -60,7 +71,9 @@ cues. Lines prefixed "Name:" are labelled speakers.
 
 Write plot beats in chronological order as short factual sentences in present tense. In \
 "characters", include every named character who appears, speaks, or is significantly \
-discussed, describing their role in the story (never as actors or "guest stars"). List \
+discussed, describing their role in the story (never as actors or "guest stars"). List each \
+person once, under their fullest name. Family members are separate people: a parent called \
+"Daddy" and a son are two entries, and neither gets the other's name as an alias. List \
 unresolved questions in "open_threads" and end with the "cliffhanger" the episode closes on. \
 Respond with JSON matching the schema."""
 
