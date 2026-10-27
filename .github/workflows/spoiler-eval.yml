@@ -1,0 +1,46 @@
+name: Spoiler eval
+
+# Runs the spoiler eval set against a small model on Ollama. It fails if a recap
+# generated at a fixture's cutoff mentions any of that fixture's later events.
+on:
+  workflow_dispatch:
+    inputs:
+      model:
+        description: Ollama model to evaluate
+        default: qwen2.5:3b
+  schedule:
+    - cron: "0 6 * * 1"
+  pull_request:
+    paths:
+      - "backend/wherewerewe/llm/**"
+      - "backend/wherewerewe/evaluation.py"
+      - "backend/tests/spoiler_eval/**"
+
+jobs:
+  eval:
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    env:
+      MODEL: ${{ github.event.inputs.model || 'qwen2.5:3b' }}
+    defaults:
+      run:
+        working-directory: backend
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v5
+        with:
+          version: "0.13.6"
+      - name: Install Ollama and pull the model
+        run: |
+          curl -fsSL https://ollama.com/install.sh | sh
+          (ollama serve > /tmp/ollama.log 2>&1 &)
+          for i in $(seq 1 30); do curl -sf http://127.0.0.1:11434/api/version && break; sleep 1; done
+          ollama pull "$MODEL"
+      - name: Install dependencies
+        run: uv sync --frozen
+      - name: Run spoiler eval
+        env:
+          EVAL_LLM_BASE_URL: http://127.0.0.1:11434/v1
+          EVAL_LLM_MODEL: ${{ env.MODEL }}
+          EVAL_LLM_CONTEXT: "8192"
+        run: uv run pytest -m eval tests/spoiler_eval -v -s

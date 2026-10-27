@@ -1,0 +1,35 @@
+<?xml version="1.0"?>
+<Container version="2">
+  <Name>wherewerewe</Name>
+  <Repository>ghcr.io/nkskater/wherewerewe:latest</Repository>
+  <Registry>https://github.com/nkskater/wherewerewe/pkgs/container/wherewerewe</Registry>
+  <Network>bridge</Network>
+  <Shell>bash</Shell>
+  <Privileged>false</Privileged>
+  <Support>https://github.com/nkskater/wherewerewe/issues</Support>
+  <Project>https://github.com/nkskater/wherewerewe</Project>
+  <Overview>Spoiler-safe "Previously on..." recaps for TV shows, written only from the episodes each Plex user has actually finished (via Tautulli). Uses subtitles or Whisper for dialogue and a local LLM (Ollama or any OpenAI-compatible endpoint) for summaries.</Overview>
+  <Category>MediaServer:Other Tools:</Category>
+  <WebUI>http://[IP]:[PORT:8765]/</WebUI>
+  <Icon>https://raw.githubusercontent.com/nkskater/wherewerewe/main/backend/wherewerewe/web/static/icon.svg</Icon>
+  <ExtraParams>--runtime=nvidia</ExtraParams>
+  <Config Name="Web UI port" Target="8765" Default="8765" Mode="tcp" Description="Web UI and API" Type="Port" Display="always" Required="true">8765</Config>
+  <Config Name="Config" Target="/config" Default="/mnt/user/appdata/wherewerewe" Mode="rw" Description="Database, cached dialogue and posters" Type="Path" Display="always" Required="true">/mnt/user/appdata/wherewerewe</Config>
+  <Config Name="Media" Target="/data/media" Default="/mnt/user/media" Mode="ro" Description="Your media library, read-only" Type="Path" Display="always" Required="true">/mnt/user/media</Config>
+  <Config Name="PUBLIC_URL" Target="PUBLIC_URL" Default="http://192.168.1.100:8765" Description="Address of this app from your phone; used in notification links" Type="Variable" Display="always" Required="false">http://192.168.1.100:8765</Config>
+  <Config Name="PLEX_URL" Target="PLEX_URL" Default="" Description="e.g. https://192.168.1.100:32400" Type="Variable" Display="always" Required="true"/>
+  <Config Name="PLEX_TOKEN" Target="PLEX_TOKEN" Default="" Description="Plex token" Type="Variable" Display="always" Required="false" Mask="true"/>
+  <Config Name="VERIFY_SSL" Target="VERIFY_SSL" Default="false" Description="Verify TLS certificates (Plex over https by IP needs false)" Type="Variable" Display="advanced" Required="false">false</Config>
+  <Config Name="TAUTULLI_URL" Target="TAUTULLI_URL" Default="" Description="e.g. http://192.168.1.100:8181" Type="Variable" Display="always" Required="true"/>
+  <Config Name="TAUTULLI_API_KEY" Target="TAUTULLI_API_KEY" Default="" Description="Tautulli API key (Settings, Web Interface)" Type="Variable" Display="always" Required="true" Mask="true"/>
+  <Config Name="LLM_BASE_URL" Target="LLM_BASE_URL" Default="http://192.168.1.100:11434/v1" Description="Ollama or any OpenAI-compatible endpoint" Type="Variable" Display="always" Required="true">http://192.168.1.100:11434/v1</Config>
+  <Config Name="LLM_MODEL" Target="LLM_MODEL" Default="qwen2.5:14b" Description="Model name" Type="Variable" Display="always" Required="true">qwen2.5:14b</Config>
+  <Config Name="LLM_API_KEY" Target="LLM_API_KEY" Default="" Description="Only for hosted APIs" Type="Variable" Display="advanced" Required="false" Mask="true"/>
+  <Config Name="MEDIA_PATH_MAP" Target="MEDIA_PATH_MAP" Default="/data=/data/media" Description="Plex's media path = the same folder in this container" Type="Variable" Display="always" Required="false">/data=/data/media</Config>
+  <Config Name="WHISPER_MODEL" Target="WHISPER_MODEL" Default="large-v3" Description="faster-whisper model for episodes without subtitles" Type="Variable" Display="advanced" Required="false">large-v3</Config>
+  <Config Name="WHISPER_DEVICE" Target="WHISPER_DEVICE" Default="cuda" Description="cuda or cpu" Type="Variable" Display="advanced" Required="false">cuda</Config>
+  <Config Name="NVIDIA_VISIBLE_DEVICES" Target="NVIDIA_VISIBLE_DEVICES" Default="" Description="GPU UUID for Whisper (leave empty and remove --runtime=nvidia to run without a GPU)" Type="Variable" Display="advanced" Required="false"/>
+  <Config Name="TMDB_API_KEY" Target="TMDB_API_KEY" Default="" Description="Optional: episode synopses for extra grounding" Type="Variable" Display="advanced" Required="false" Mask="true"/>
+  <Config Name="NTFY_URL" Target="NTFY_URL" Default="" Description="Optional: default ntfy topic URL for recap pushes" Type="Variable" Display="advanced" Required="false"/>
+  <Config Name="DISCORD_WEBHOOK_URL" Target="DISCORD_WEBHOOK_URL" Default="" Description="Optional: Discord webhook for recap pushes" Type="Variable" Display="advanced" Required="false" Mask="true"/>
+</Container>

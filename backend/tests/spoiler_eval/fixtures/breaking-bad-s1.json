@@ -1,0 +1,186 @@
+{
+  "name": "breaking-bad-s1",
+  "title": "Breaking Bad",
+  "cutoff": "S01E07",
+  "episodes": [
+    {
+      "code": "S01E01",
+      "title": "Pilot",
+      "summary": {
+        "plot_beats": [
+          "Walter White, a high school chemistry teacher in Albuquerque who also works at a car wash, turns 50.",
+          "At his birthday party his brother-in-law Hank Schrader, a DEA agent, shows TV coverage of a meth lab bust and the cash seized.",
+          "Walt collapses at the car wash and is diagnosed with inoperable lung cancer. He tells no one.",
+          "Walt rides along on a DEA raid and sees his former student Jesse Pinkman escape from the scene.",
+          "Walt tracks Jesse down and pressures him into a partnership: Walt will cook meth and Jesse will sell it.",
+          "They cook in an RV in the desert, producing unusually pure meth.",
+          "Jesse's contacts Krazy-8 and Emilio threaten them; Walt releases phosphine gas in the RV and knocks them out.",
+          "Hearing sirens, Walt prepares to shoot himself, but the sirens belong to fire trucks heading to a brush fire."
+        ],
+        "characters": [
+          {"name": "Walter White", "aliases": ["Walt"], "role": "Chemistry teacher", "status": "Secretly cooking meth; has lung cancer", "new_info": "Diagnosed with terminal lung cancer; starts cooking meth to provide for his family", "relationships": ["married to Skyler", "father of Walter Jr."]},
+          {"name": "Jesse Pinkman", "aliases": [], "role": "Small-time meth dealer, Walt's former student", "status": "Walt's partner", "new_info": "Agrees to partner with Walt", "relationships": ["partner of Walt"]},
+          {"name": "Skyler White", "aliases": [], "role": "Walt's wife", "status": "Pregnant", "new_info": "Pregnant with the couple's second child", "relationships": ["married to Walt"]},
+          {"name": "Hank Schrader", "aliases": [], "role": "DEA agent, Walt's brother-in-law", "status": "Investigating meth labs", "new_info": "Brags about DEA busts", "relationships": ["married to Marie, Skyler's sister"]},
+          {"name": "Krazy-8", "aliases": [], "role": "Meth distributor", "status": "Poisoned by Walt", "new_info": "Threatened Walt and Jesse", "relationships": []},
+          {"name": "Emilio", "aliases": [], "role": "Krazy-8's partner", "status": "Poisoned by Walt", "new_info": "Recognized Walt from the raid", "relationships": []}
+        ],
+        "relationships_changed": ["Walt and Jesse become partners"],
+        "open_threads": ["What happens to Krazy-8 and Emilio after the gas?", "Walt has not told his family about the cancer"],
+        "resolved_threads": [],
+        "cliffhanger": "Walt stands in the desert with a gun as sirens approach, then realizes they are fire trucks."
+      }
+    },
+    {
+      "code": "S01E02",
+      "title": "Cat's in the Bag...",
+      "summary": {
+        "plot_beats": [
+          "Emilio is dead from the gas, but Krazy-8 survives.",
+          "Walt and Jesse chain Krazy-8 to a post in Jesse's basement.",
+          "Jesse tries to dissolve Emilio's body with hydrofluoric acid in his upstairs bathtub; the acid eats through the tub and floor and the remains crash down.",
+          "Skyler grows suspicious of Walt's absences and confronts Jesse by phone, thinking he is selling Walt marijuana."
+        ],
+        "characters": [
+          {"name": "Walter White", "aliases": ["Walt"], "role": "Chemistry teacher", "status": "Holding Krazy-8 captive", "new_info": "Lies to Skyler about where he goes", "relationships": []},
+          {"name": "Jesse Pinkman", "aliases": [], "role": "Walt's partner", "status": "Cleaning up the body", "new_info": "Botches dissolving Emilio's body", "relationships": []},
+          {"name": "Krazy-8", "aliases": [], "role": "Meth distributor", "status": "Chained in Jesse's basement", "new_info": "Survived the gas", "relationships": []},
+          {"name": "Skyler White", "aliases": [], "role": "Walt's wife", "status": "Suspicious", "new_info": "Warns Jesse to stop selling Walt pot", "relationships": []}
+        ],
+        "relationships_changed": [],
+        "open_threads": ["What will Walt do with Krazy-8?", "Skyler suspects Walt is hiding something"],
+        "resolved_threads": ["Emilio is dead"],
+        "cliffhanger": "Emilio's dissolved remains crash through the ceiling."
+      }
+    },
+    {
+      "code": "S01E03",
+      "title": "...And the Bag's in the River",
+      "summary": {
+        "plot_beats": [
+          "Walt agonizes over killing Krazy-8 and writes a list of reasons to let him live or kill him.",
+          "Walt and Krazy-8 talk and find some connection; Walt decides to let him go.",
+          "Walt notices a shard of a broken plate is missing and realizes Krazy-8 is hiding it as a weapon.",
+          "When Krazy-8 lunges with the shard, Walt strangles him with a bike lock.",
+          "Hank takes Walt Jr. to see a meth addict to scare him off drugs.",
+          "Walt finally tells Skyler he has lung cancer."
+        ],
+        "characters": [
+          {"name": "Walter White", "aliases": ["Walt"], "role": "Chemistry teacher", "status": "Has killed Krazy-8", "new_info": "Kills for the first time; tells Skyler about his cancer", "relationships": []},
+          {"name": "Krazy-8", "aliases": [], "role": "Meth distributor", "status": "Dead", "new_info": "Killed by Walt after hiding a plate shard", "relationships": []},
+          {"name": "Skyler White", "aliases": [], "role": "Walt's wife", "status": "Learns of the cancer", "new_info": "Told about Walt's diagnosis", "relationships": []},
+          {"name": "Walter White Jr.", "aliases": ["Walt Jr."], "role": "Walt and Skyler's teenage son", "status": "", "new_info": "Hank tries to scare him away from drugs", "relationships": ["son of Walt and Skyler"]}
+        ],
+        "relationships_changed": [],
+        "open_threads": ["How will the family react to the cancer?"],
+        "resolved_threads": ["Krazy-8 is dead"],
+        "cliffhanger": "Walt tells Skyler he has cancer."
+      }
+    },
+    {
+      "code": "S01E04",
+      "title": "Cancer Man",
+      "summary": {
+        "plot_beats": [
+          "Walt tells the extended family about his cancer.",
+          "Hank tells his DEA team about a new, very pure meth in town.",
+          "Walt sees an oncologist who recommends expensive treatment the family can't easily afford.",
+          "Jesse visits his parents, who throw him out after finding a joint that belongs to his younger brother.",
+          "A rude businessman takes Walt's parking spot and insults him; Walt sets the man's car on fire by shorting its battery."
+        ],
+        "characters": [
+          {"name": "Walter White", "aliases": ["Walt"], "role": "Chemistry teacher", "status": "Facing costly cancer treatment", "new_info": "Takes revenge on a rude businessman by destroying his car", "relationships": []},
+          {"name": "Jesse Pinkman", "aliases": [], "role": "Walt's partner", "status": "Estranged from his parents", "new_info": "His parents kick him out again", "relationships": []},
+          {"name": "Hank Schrader", "aliases": [], "role": "DEA agent", "status": "Tracking the new meth", "new_info": "Notices a new high-purity product", "relationships": []}
+        ],
+        "relationships_changed": ["Jesse's parents cut him off"],
+        "open_threads": ["How will Walt pay for treatment?", "Hank is investigating the new meth"],
+        "resolved_threads": [],
+        "cliffhanger": "Walt walks away as the businessman's car burns."
+      }
+    },
+    {
+      "code": "S01E05",
+      "title": "Gray Matter",
+      "summary": {
+        "plot_beats": [
+          "Walt and Skyler attend a party thrown by Walt's wealthy former partner Elliott and his wife Gretchen.",
+          "Elliott offers Walt a job with health insurance at their company, Gray Matter; Walt refuses.",
+          "Jesse tries to go straight, fails, and starts cooking with his friend Badger, producing poor meth.",
+          "At a family intervention, Walt says he doesn't want treatment, then agrees to it.",
+          "Walt goes to Jesse and asks if he wants to cook again."
+        ],
+        "characters": [
+          {"name": "Walter White", "aliases": ["Walt"], "role": "Chemistry teacher", "status": "Agrees to treatment", "new_info": "Proudly refuses Elliott's charity", "relationships": ["former partner of Elliott"]},
+          {"name": "Elliott Schwartz", "aliases": ["Elliott"], "role": "Wealthy co-founder of Gray Matter", "status": "", "new_info": "Offers Walt a job", "relationships": ["married to Gretchen"]},
+          {"name": "Gretchen Schwartz", "aliases": ["Gretchen"], "role": "Elliott's wife", "status": "", "new_info": "", "relationships": []},
+          {"name": "Badger", "aliases": [], "role": "Jesse's friend", "status": "", "new_info": "Helps Jesse cook", "relationships": ["friend of Jesse"]}
+        ],
+        "relationships_changed": ["Walt and Jesse resume their partnership"],
+        "open_threads": ["Walt still needs money for treatment"],
+        "resolved_threads": ["Walt agrees to cancer treatment"],
+        "cliffhanger": "Walt asks Jesse to start cooking with him again."
+      }
+    },
+    {
+      "code": "S01E06",
+      "title": "Crazy Handful of Nothin'",
+      "summary": {
+        "plot_beats": [
+          "Walt starts chemotherapy and shaves his head.",
+          "Walt tells Jesse he will cook but wants no part of violence or selling.",
+          "Hank investigates stolen lab equipment from Walt's school; the janitor is wrongly arrested.",
+          "Jesse tries to sell a large amount of meth to the distributor Tuco Salamanca, who beats him and takes the drugs.",
+          "Walt, calling himself Heisenberg, confronts Tuco and blows up his office with fulminated mercury disguised as meth.",
+          "Tuco pays Walt for the stolen meth and Jesse's injuries and agrees to do business."
+        ],
+        "characters": [
+          {"name": "Walter White", "aliases": ["Walt", "Heisenberg"], "role": "Chemistry teacher and meth cook", "status": "In chemotherapy; doing business with Tuco", "new_info": "Adopts the name Heisenberg and intimidates Tuco with an explosion", "relationships": []},
+          {"name": "Tuco Salamanca", "aliases": ["Tuco"], "role": "Violent meth distributor", "status": "Partnering with Walt", "new_info": "Beats Jesse; is forced to pay Walt", "relationships": []},
+          {"name": "Jesse Pinkman", "aliases": [], "role": "Walt's partner", "status": "Hospitalized after the beating", "new_info": "Beaten by Tuco", "relationships": []}
+        ],
+        "relationships_changed": ["Walt and Jesse begin working with Tuco"],
+        "open_threads": ["Tuco is dangerous and unpredictable", "Hank is closing in on the stolen equipment"],
+        "resolved_threads": [],
+        "cliffhanger": "Walt walks out of Tuco's wrecked office with the money."
+      }
+    },
+    {
+      "code": "S01E07",
+      "title": "A No-Rough-Stuff-Type Deal",
+      "summary": {
+        "plot_beats": [
+          "Walt promises Tuco two pounds of meth a week.",
+          "Needing more methylamine, Walt and Jesse use thermite to break into a chemical warehouse and steal a barrel.",
+          "Skyler tries to return a baby tiara her sister Marie gave her and is accused of shoplifting; Marie stole it.",
+          "Walt and Jesse deliver to Tuco at a junkyard.",
+          "Tuco beats his own henchman No-Doze to death in front of them for speaking out of turn."
+        ],
+        "characters": [
+          {"name": "Walter White", "aliases": ["Walt"], "role": "Meth cook", "status": "Supplying Tuco", "new_info": "Leads a warehouse break-in", "relationships": []},
+          {"name": "Tuco Salamanca", "aliases": ["Tuco"], "role": "Meth distributor", "status": "Unstable", "new_info": "Kills No-Doze with his fists", "relationships": []},
+          {"name": "Marie Schrader", "aliases": ["Marie"], "role": "Skyler's sister, Hank's wife", "status": "", "new_info": "Shoplifts and gave Skyler a stolen tiara", "relationships": ["sister of Skyler", "married to Hank"]},
+          {"name": "No-Doze", "aliases": [], "role": "Tuco's henchman", "status": "Dead", "new_info": "Beaten to death by Tuco", "relationships": []}
+        ],
+        "relationships_changed": [],
+        "open_threads": ["Walt and Jesse are now tied to a violent, erratic distributor", "Hank is still investigating"],
+        "resolved_threads": [],
+        "cliffhanger": "Walt and Jesse watch, horrified, as Tuco beats No-Doze to death."
+      }
+    }
+  ],
+  "forbidden": [
+    {"event": "Gus Fring or Los Pollos Hermanos (introduced in season 2)", "pattern": "\\bGus\\b|\\bFring\\b|Pollos"},
+    {"event": "Saul Goodman (introduced in season 2)", "pattern": "\\bSaul\\b|\\bGoodman\\b"},
+    {"event": "Mike Ehrmantraut (introduced in season 2)", "pattern": "\\bMike\\b|Ehrmantraut"},
+    {"event": "Jane Margolis (season 2)", "pattern": "\\bJane\\b|Margolis"},
+    {"event": "Hector Salamanca (season 2)", "pattern": "\\bHector\\b|\\bTio\\b"},
+    {"event": "Holly's birth", "pattern": "\\bHolly\\b"},
+    {"event": "Tuco's death", "pattern": "Tuco('s)? death|death of Tuco|kills? Tuco|Tuco (is|was|gets) (killed|shot)"},
+    {"event": "The plane crash", "pattern": "plane crash|mid-?air collision|Wayfarer"},
+    {"event": "The cousins' attack on Hank", "pattern": "\\bcousins\\b|\\bLeonel\\b|\\bMarco\\b"},
+    {"event": "Skyler discovering the meth business", "pattern": "Skyler (learns|discovers|finds out)[^.]{0,60}(meth|cooking|drug)"},
+    {"event": "Walt's remission", "pattern": "remission"},
+    {"event": "Later characters", "pattern": "\\b(Gale|Todd|Lydia|Brock|Andrea|Combo)\\b"}
+  ]
+}

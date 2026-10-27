@@ -1,0 +1,46 @@
+{% extends "base.html" %}
+{% block title %}Settings · Where Were We{% endblock %}
+{% block page %}settings{% endblock %}
+{% block content %}
+<section class="page-head"><h1>Settings</h1></section>
+
+<section class="card">
+  <h2>Status</h2>
+  <ul class="health" id="health"><li class="muted">Checking…</li></ul>
+</section>
+
+<form id="settings-form" class="card">
+  <div id="settings-groups"></div>
+  <p class="muted small">Values saved here override environment variables. Clear a field and save to
+    go back to the environment value. Secrets show as ********; leave them as-is to keep them.</p>
+  <div class="actions">
+    <button class="btn primary" type="submit">Save settings</button>
+    <span id="settings-msg" class="muted"></span>
+  </div>
+</form>
+
+<section class="card">
+  <h2>Viewers</h2>
+  <p class="muted small">Viewers come from Tautulli history. Notification target is a ntfy topic URL
+    (https://ntfy.sh/your-topic) or a Discord webhook URL; leave it empty to use the global ones.</p>
+  <div id="user-settings"><p class="muted">Loading…</p></div>
+</section>
+
+<section class="card">
+  <h2>Tautulli webhook</h2>
+  <p class="small">In Tautulli: Settings → Notification Agents → Add → <b>Webhook</b>.
+    Webhook URL: <code id="webhook-url"></code>, method <b>POST</b>.
+    Under Triggers enable <b>Playback Start</b>, <b>Playback Stop</b> and <b>Watched</b>.
+    Under Data, use this JSON body for all three:</p>
+  <pre class="code">{
+  "action": "{action}",
+  "media_type": "{media_type}",
+  "user_id": "{user_id}",
+  "username": "{username}",
+  "rating_key": "{rating_key}",
+  "grandparent_rating_key": "{grandparent_rating_key}",
+  "season_num": "{season_num}",
+  "episode_num": "{episode_num}"
+}</pre>
+</section>
+{% endblock %}

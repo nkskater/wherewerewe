@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+{% block page %}home{% endblock %}
+{% block content %}
+<section class="page-head">
+  <h1>Continue watching</h1>
+  <div class="seg" id="length-seg" role="radiogroup" aria-label="Recap length">
+    <button data-length="quick" role="radio">Quick</button>
+    <button data-length="standard" role="radio">Standard</button>
+    <button data-length="deep" role="radio">Deep</button>
+  </div>
+</section>
+<p class="muted" id="home-status">Loading…</p>
+<div class="grid" id="show-grid"></div>
+<template id="show-card">
+  <article class="card show">
+    <div class="poster"><img alt="" loading="lazy"><span class="poster-fallback"></span></div>
+    <div class="show-body">
+      <h2 class="show-title"></h2>
+      <p class="show-pos"></p>
+      <p class="show-next muted"></p>
+      <div class="actions">
+        <button class="btn primary recap-btn">Recap</button>
+        <a class="btn ghost chars-link">Characters</a>
+      </div>
+    </div>
+  </article>
+</template>
+{% endblock %}

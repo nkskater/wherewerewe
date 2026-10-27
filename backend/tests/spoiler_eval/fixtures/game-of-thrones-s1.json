@@ -1,0 +1,674 @@
+{
+  "name": "game-of-thrones-s1",
+  "title": "Game of Thrones",
+  "cutoff": "S01E08",
+  "episodes": [
+    {
+      "code": "S01E01",
+      "title": "Winter Is Coming",
+      "summary": {
+        "plot_beats": [
+          "Rangers of the Night's Watch beyond the Wall are attacked by White Walkers; one survivor deserts.",
+          "Lord Eddard 'Ned' Stark of Winterfell beheads the deserter, who insists he saw White Walkers.",
+          "The Starks find a litter of direwolf pups, one for each Stark child, including Ned's bastard son Jon Snow.",
+          "King Robert Baratheon arrives at Winterfell with Queen Cersei Lannister and asks Ned to replace the late Jon Arryn as Hand of the King.",
+          "A letter from Catelyn's sister Lysa claims the Lannisters murdered Jon Arryn.",
+          "Across the sea, Viserys Targaryen marries his sister Daenerys to the Dothraki warlord Khal Drogo in exchange for an army; the exiled knight Jorah Mormont pledges himself to them.",
+          "Bran Stark, climbing a tower, sees Cersei having sex with her twin brother Jaime; Jaime pushes Bran out of the window."
+        ],
+        "characters": [
+          {
+            "name": "Eddard Stark",
+            "aliases": [
+              "Ned"
+            ],
+            "role": "Lord of Winterfell",
+            "status": "Considering the king's offer",
+            "new_info": "Asked to become Hand of the King",
+            "relationships": [
+              "married to Catelyn",
+              "father of Robb, Sansa, Arya, Bran and Rickon",
+              "father of Jon Snow"
+            ]
+          },
+          {
+            "name": "Catelyn Stark",
+            "aliases": [],
+            "role": "Ned's wife",
+            "status": "",
+            "new_info": "Receives Lysa's warning about the Lannisters",
+            "relationships": [
+              "sister of Lysa"
+            ]
+          },
+          {
+            "name": "Robert Baratheon",
+            "aliases": [
+              "King Robert"
+            ],
+            "role": "King of the Seven Kingdoms",
+            "status": "",
+            "new_info": "Asks Ned to be his Hand",
+            "relationships": [
+              "married to Cersei",
+              "old friend of Ned"
+            ]
+          },
+          {
+            "name": "Cersei Lannister",
+            "aliases": [],
+            "role": "Queen",
+            "status": "",
+            "new_info": "Secretly sleeping with her twin Jaime",
+            "relationships": [
+              "married to Robert",
+              "twin of Jaime"
+            ]
+          },
+          {
+            "name": "Jaime Lannister",
+            "aliases": [],
+            "role": "Kingsguard knight",
+            "status": "",
+            "new_info": "Pushes Bran from the tower to hide the affair",
+            "relationships": [
+              "twin of Cersei"
+            ]
+          },
+          {
+            "name": "Bran Stark",
+            "aliases": [],
+            "role": "Ned's young son",
+            "status": "Fell from the tower",
+            "new_info": "Saw Cersei and Jaime together",
+            "relationships": []
+          },
+          {
+            "name": "Jon Snow",
+            "aliases": [],
+            "role": "Ned's bastard son",
+            "status": "",
+            "new_info": "Finds the albino direwolf pup",
+            "relationships": []
+          },
+          {
+            "name": "Daenerys Targaryen",
+            "aliases": [
+              "Dany"
+            ],
+            "role": "Exiled princess",
+            "status": "Married to Khal Drogo",
+            "new_info": "Married off by her brother; given three dragon eggs as a wedding gift",
+            "relationships": [
+              "sister of Viserys",
+              "wife of Khal Drogo"
+            ]
+          },
+          {
+            "name": "Viserys Targaryen",
+            "aliases": [],
+            "role": "Exiled heir of the deposed royal family",
+            "status": "",
+            "new_info": "Trades his sister for an army",
+            "relationships": [
+              "brother of Daenerys"
+            ]
+          },
+          {
+            "name": "Khal Drogo",
+            "aliases": [
+              "Drogo"
+            ],
+            "role": "Dothraki warlord",
+            "status": "",
+            "new_info": "Marries Daenerys",
+            "relationships": [
+              "husband of Daenerys"
+            ]
+          },
+          {
+            "name": "Jorah Mormont",
+            "aliases": [],
+            "role": "Exiled knight",
+            "status": "",
+            "new_info": "Pledges service to the Targaryens",
+            "relationships": []
+          }
+        ],
+        "relationships_changed": [
+          "Daenerys marries Khal Drogo"
+        ],
+        "open_threads": [
+          "Who killed Jon Arryn?",
+          "Will Bran survive his fall?",
+          "The White Walkers are real"
+        ],
+        "resolved_threads": [],
+        "cliffhanger": "Jaime pushes Bran out of the tower window."
+      }
+    },
+    {
+      "code": "S01E02",
+      "title": "The Kingsroad",
+      "summary": {
+        "plot_beats": [
+          "Bran lies in a coma.",
+          "Ned leaves for King's Landing with his daughters Sansa and Arya; Jon heads to the Wall to join the Night's Watch, travelling with Tyrion Lannister.",
+          "Jon gives Arya a small sword she names Needle.",
+          "An assassin tries to kill Bran; Catelyn fights him off and Bran's direwolf kills him. The assassin's dagger is unusually fine.",
+          "On the road, Arya's direwolf Nymeria bites Prince Joffrey when he attacks Arya; Arya drives Nymeria away.",
+          "Cersei demands a wolf be killed, and Ned kills Sansa's direwolf Lady himself; the Hound kills Arya's friend Mycah."
+        ],
+        "characters": [
+          {
+            "name": "Arya Stark",
+            "aliases": [],
+            "role": "Ned's younger daughter",
+            "status": "Lost her direwolf",
+            "new_info": "Receives the sword Needle from Jon",
+            "relationships": []
+          },
+          {
+            "name": "Sansa Stark",
+            "aliases": [],
+            "role": "Ned's elder daughter",
+            "status": "Betrothed to Joffrey",
+            "new_info": "Her direwolf Lady is killed",
+            "relationships": [
+              "betrothed to Joffrey"
+            ]
+          },
+          {
+            "name": "Joffrey Baratheon",
+            "aliases": [
+              "Joffrey"
+            ],
+            "role": "Crown prince",
+            "status": "",
+            "new_info": "Lies about the fight with Arya",
+            "relationships": [
+              "son of Robert and Cersei"
+            ]
+          },
+          {
+            "name": "Tyrion Lannister",
+            "aliases": [
+              "the Imp"
+            ],
+            "role": "Cersei and Jaime's brother",
+            "status": "Travelling to the Wall",
+            "new_info": "Visits the Wall out of curiosity",
+            "relationships": [
+              "brother of Cersei and Jaime"
+            ]
+          },
+          {
+            "name": "Sandor Clegane",
+            "aliases": [
+              "the Hound"
+            ],
+            "role": "Joffrey's bodyguard",
+            "status": "",
+            "new_info": "Kills Mycah",
+            "relationships": []
+          },
+          {
+            "name": "Catelyn Stark",
+            "aliases": [],
+            "role": "Ned's wife",
+            "status": "Wounded",
+            "new_info": "Fights off an assassin sent for Bran",
+            "relationships": []
+          }
+        ],
+        "relationships_changed": [
+          "Tension between the Starks and the Lannisters grows"
+        ],
+        "open_threads": [
+          "Who sent the assassin after Bran?"
+        ],
+        "resolved_threads": [],
+        "cliffhanger": "Bran opens his eyes."
+      }
+    },
+    {
+      "code": "S01E03",
+      "title": "Lord Snow",
+      "summary": {
+        "plot_beats": [
+          "Ned joins the small council in King's Landing and learns the crown is deep in debt, much of it to the Lannisters.",
+          "Catelyn comes to King's Landing in secret; Petyr 'Littlefinger' Baelish claims the assassin's dagger belonged to Tyrion.",
+          "At Castle Black, Jon struggles to fit in among the recruits.",
+          "Arya begins sword lessons with Syrio Forel.",
+          "Bran wakes but cannot walk and remembers nothing of the fall.",
+          "Daenerys learns she is pregnant."
+        ],
+        "characters": [
+          {
+            "name": "Petyr Baelish",
+            "aliases": [
+              "Littlefinger"
+            ],
+            "role": "Master of coin",
+            "status": "",
+            "new_info": "Says the dagger was Tyrion's",
+            "relationships": [
+              "childhood friend of Catelyn"
+            ]
+          },
+          {
+            "name": "Syrio Forel",
+            "aliases": [],
+            "role": "Arya's sword teacher",
+            "status": "",
+            "new_info": "Begins teaching Arya",
+            "relationships": []
+          },
+          {
+            "name": "Bran Stark",
+            "aliases": [],
+            "role": "Ned's son",
+            "status": "Awake but paralysed",
+            "new_info": "Remembers nothing of his fall",
+            "relationships": []
+          },
+          {
+            "name": "Daenerys Targaryen",
+            "aliases": [],
+            "role": "Khaleesi",
+            "status": "Pregnant",
+            "new_info": "Is carrying Drogo's child",
+            "relationships": []
+          }
+        ],
+        "relationships_changed": [],
+        "open_threads": [
+          "Did Tyrion send the assassin?",
+          "The crown's debts"
+        ],
+        "resolved_threads": [
+          "Bran survives"
+        ],
+        "cliffhanger": "Daenerys tells Jorah she is pregnant."
+      }
+    },
+    {
+      "code": "S01E04",
+      "title": "Cripples, Bastards, and Broken Things",
+      "summary": {
+        "plot_beats": [
+          "Tyrion gives Bran a design for a saddle that would let him ride.",
+          "At the Wall, Samwell Tarly arrives and Jon protects him from the other recruits.",
+          "Ned's investigation into Jon Arryn's death leads him to a blacksmith's apprentice, Gendry, King Robert's unacknowledged son.",
+          "Viserys is humiliated by the Dothraki as Daenerys gains confidence.",
+          "Ser Gregor Clegane, 'the Mountain', kills a knight in the Hand's tourney.",
+          "Catelyn encounters Tyrion at an inn and has him arrested for the attempt on Bran's life."
+        ],
+        "characters": [
+          {
+            "name": "Samwell Tarly",
+            "aliases": [
+              "Sam"
+            ],
+            "role": "Night's Watch recruit",
+            "status": "",
+            "new_info": "Befriended and protected by Jon",
+            "relationships": [
+              "friend of Jon"
+            ]
+          },
+          {
+            "name": "Gendry",
+            "aliases": [],
+            "role": "Blacksmith's apprentice",
+            "status": "",
+            "new_info": "Robert's bastard son",
+            "relationships": [
+              "son of Robert"
+            ]
+          },
+          {
+            "name": "Gregor Clegane",
+            "aliases": [
+              "the Mountain"
+            ],
+            "role": "Knight",
+            "status": "",
+            "new_info": "Kills a knight in the tourney",
+            "relationships": [
+              "brother of the Hound"
+            ]
+          },
+          {
+            "name": "Tyrion Lannister",
+            "aliases": [],
+            "role": "Lannister",
+            "status": "Arrested by Catelyn",
+            "new_info": "Accused of trying to kill Bran",
+            "relationships": []
+          }
+        ],
+        "relationships_changed": [
+          "Jon and Sam become friends"
+        ],
+        "open_threads": [
+          "Why was Jon Arryn looking for Robert's bastards?",
+          "How will the Lannisters respond to Tyrion's arrest?"
+        ],
+        "resolved_threads": [],
+        "cliffhanger": "Catelyn has Tyrion seized at the inn."
+      }
+    },
+    {
+      "code": "S01E05",
+      "title": "The Wolf and the Lion",
+      "summary": {
+        "plot_beats": [
+          "At the tourney, the Hound saves Ser Loras Tyrell from his brother the Mountain.",
+          "Catelyn takes Tyrion to her sister Lysa at the Eyrie, where he is imprisoned.",
+          "Arya overhears Varys and another man discussing a coming war.",
+          "Robert orders Daenerys assassinated after learning she is pregnant; Ned refuses to be part of it and resigns as Hand.",
+          "In retaliation for Tyrion's arrest, Jaime attacks Ned in the street; Ned's guard Jory is killed and Ned is wounded."
+        ],
+        "characters": [
+          {
+            "name": "Varys",
+            "aliases": [
+              "the Spider"
+            ],
+            "role": "Master of whisperers",
+            "status": "",
+            "new_info": "Overheard plotting by Arya",
+            "relationships": []
+          },
+          {
+            "name": "Lysa Arryn",
+            "aliases": [],
+            "role": "Jon Arryn's widow",
+            "status": "",
+            "new_info": "Imprisons Tyrion in a sky cell",
+            "relationships": [
+              "sister of Catelyn"
+            ]
+          },
+          {
+            "name": "Loras Tyrell",
+            "aliases": [],
+            "role": "Knight",
+            "status": "",
+            "new_info": "Saved by the Hound; secretly in a relationship with Renly",
+            "relationships": [
+              "lover of Renly Baratheon"
+            ]
+          },
+          {
+            "name": "Eddard Stark",
+            "aliases": [
+              "Ned"
+            ],
+            "role": "Hand of the King",
+            "status": "Wounded; resigned",
+            "new_info": "Refuses to support killing Daenerys",
+            "relationships": []
+          }
+        ],
+        "relationships_changed": [
+          "Open conflict between Stark and Lannister men"
+        ],
+        "open_threads": [
+          "Robert has ordered Daenerys killed",
+          "Tyrion is a prisoner at the Eyrie"
+        ],
+        "resolved_threads": [],
+        "cliffhanger": "Jaime's men kill Jory and Ned is left wounded in the street."
+      }
+    },
+    {
+      "code": "S01E06",
+      "title": "A Golden Crown",
+      "summary": {
+        "plot_beats": [
+          "Robert reinstates Ned as Hand.",
+          "Ned strips the Mountain of his titles for raiding the Riverlands.",
+          "Bran is attacked by wildlings in the woods and saved by Robb and Theon Greyjoy; a wildling woman, Osha, is taken prisoner.",
+          "Tyrion demands a trial by combat; the sellsword Bronn fights for him and wins, and Tyrion is released.",
+          "Viserys threatens Daenerys and demands his crown; Khal Drogo pours molten gold over his head, killing him.",
+          "Reading a book of family lineages, Ned realizes something about Joffrey's parentage."
+        ],
+        "characters": [
+          {
+            "name": "Bronn",
+            "aliases": [],
+            "role": "Sellsword",
+            "status": "Travelling with Tyrion",
+            "new_info": "Wins Tyrion's trial by combat",
+            "relationships": []
+          },
+          {
+            "name": "Theon Greyjoy",
+            "aliases": [],
+            "role": "Ward of the Starks",
+            "status": "",
+            "new_info": "Helps save Bran",
+            "relationships": []
+          },
+          {
+            "name": "Osha",
+            "aliases": [],
+            "role": "Wildling",
+            "status": "Prisoner at Winterfell",
+            "new_info": "Captured after attacking Bran",
+            "relationships": []
+          },
+          {
+            "name": "Viserys Targaryen",
+            "aliases": [],
+            "role": "Exiled heir",
+            "status": "Dead",
+            "new_info": "Killed by Drogo with molten gold",
+            "relationships": []
+          }
+        ],
+        "relationships_changed": [],
+        "open_threads": [
+          "Ned suspects Joffrey is not Robert's son"
+        ],
+        "resolved_threads": [
+          "Tyrion is free",
+          "Viserys is dead"
+        ],
+        "cliffhanger": "Ned, studying the lineage book, grasps the truth about Robert's heirs."
+      }
+    },
+    {
+      "code": "S01E07",
+      "title": "You Win or You Die",
+      "summary": {
+        "plot_beats": [
+          "Tywin Lannister tells Jaime to lead an army against the Starks.",
+          "Ned tells Cersei he knows her children are Jaime's and urges her to flee before he tells Robert.",
+          "Robert is gored by a boar while hunting and, dying, names Ned Lord Protector until Joffrey comes of age; Ned writes 'rightful heir' instead of Joffrey's name.",
+          "Robert dies. Ned asks Littlefinger to secure the City Watch.",
+          "At the Wall, Jon takes his vows but is made steward to Lord Commander Mormont rather than a ranger.",
+          "After a wine merchant tries to poison Daenerys, Drogo vows to invade the Seven Kingdoms.",
+          "In the throne room, Ned challenges Joffrey's claim; Littlefinger betrays him, and the City Watch turns on Ned's men."
+        ],
+        "characters": [
+          {
+            "name": "Tywin Lannister",
+            "aliases": [],
+            "role": "Head of House Lannister",
+            "status": "Preparing for war",
+            "new_info": "Sends Jaime to war",
+            "relationships": [
+              "father of Cersei, Jaime and Tyrion"
+            ]
+          },
+          {
+            "name": "Robert Baratheon",
+            "aliases": [],
+            "role": "King",
+            "status": "Dead",
+            "new_info": "Dies after a hunting accident",
+            "relationships": []
+          },
+          {
+            "name": "Petyr Baelish",
+            "aliases": [
+              "Littlefinger"
+            ],
+            "role": "Master of coin",
+            "status": "",
+            "new_info": "Betrays Ned",
+            "relationships": []
+          },
+          {
+            "name": "Eddard Stark",
+            "aliases": [
+              "Ned"
+            ],
+            "role": "Hand of the King",
+            "status": "Seized in the throne room",
+            "new_info": "Challenges Joffrey's right to the throne",
+            "relationships": []
+          },
+          {
+            "name": "Jon Snow",
+            "aliases": [],
+            "role": "Brother of the Night's Watch",
+            "status": "Steward to the Lord Commander",
+            "new_info": "Takes his vows",
+            "relationships": []
+          }
+        ],
+        "relationships_changed": [
+          "Littlefinger turns on Ned"
+        ],
+        "open_threads": [
+          "What will happen to Ned?",
+          "Drogo means to invade"
+        ],
+        "resolved_threads": [],
+        "cliffhanger": "Littlefinger holds a knife to Ned's throat: 'I did warn you not to trust me.'"
+      }
+    },
+    {
+      "code": "S01E08",
+      "title": "The Pointy End",
+      "summary": {
+        "plot_beats": [
+          "Lannister soldiers slaughter the Stark household in King's Landing.",
+          "Syrio Forel holds off Lannister guards so Arya can escape; she flees into the city.",
+          "Sansa is kept by Cersei and persuaded to write to Robb urging him to come and swear fealty to Joffrey.",
+          "Robb calls the northern lords to war and marches south.",
+          "Tyrion wins the support of the hill tribes by promising them land and weapons.",
+          "At the Wall, a dead ranger rises and attacks Lord Commander Mormont; Jon destroys it with fire, burning his hand.",
+          "Daenerys stops the Dothraki from raping captured villagers and protects the healer Mirri Maz Duur.",
+          "Drogo is wounded fighting one of his riders, Mago, and kills him; Mirri treats Drogo's wound.",
+          "Before the court, Sansa begs Joffrey to show her father mercy; Joffrey says he will if Ned confesses."
+        ],
+        "characters": [
+          {
+            "name": "Arya Stark",
+            "aliases": [],
+            "role": "Ned's daughter",
+            "status": "Hiding in King's Landing",
+            "new_info": "Escapes the Lannisters",
+            "relationships": []
+          },
+          {
+            "name": "Sansa Stark",
+            "aliases": [],
+            "role": "Ned's daughter",
+            "status": "Lannister hostage",
+            "new_info": "Pleads for Ned's life",
+            "relationships": []
+          },
+          {
+            "name": "Robb Stark",
+            "aliases": [],
+            "role": "Ned's eldest son",
+            "status": "Marching south with an army",
+            "new_info": "Calls the banners",
+            "relationships": []
+          },
+          {
+            "name": "Mirri Maz Duur",
+            "aliases": [],
+            "role": "Healer",
+            "status": "Treating Drogo",
+            "new_info": "Saved by Daenerys",
+            "relationships": []
+          },
+          {
+            "name": "Khal Drogo",
+            "aliases": [
+              "Drogo"
+            ],
+            "role": "Dothraki warlord",
+            "status": "Wounded",
+            "new_info": "Wounded in a fight; his wound is treated by Mirri",
+            "relationships": []
+          },
+          {
+            "name": "Jon Snow",
+            "aliases": [],
+            "role": "Brother of the Night's Watch",
+            "status": "Hand burned",
+            "new_info": "Saves Mormont from a wight",
+            "relationships": []
+          }
+        ],
+        "relationships_changed": [
+          "The Starks and Lannisters are at war"
+        ],
+        "open_threads": [
+          "Ned is imprisoned and his fate is undecided",
+          "Robb's army is marching south",
+          "Will Drogo's wound heal?",
+          "Where will Arya go?"
+        ],
+        "resolved_threads": [],
+        "cliffhanger": "Joffrey tells Sansa he will be merciful if Ned confesses his crimes."
+      }
+    }
+  ],
+  "forbidden": [
+    {
+      "event": "Ned's execution",
+      "pattern": "(Ned|Eddard)('s)? (execution|death)|\\b(Ned|Eddard)( Stark)? (is|was|gets) (executed|beheaded|killed)|(beheads|executes|kills) (Ned|Eddard)|Ned's head|Ilyn Payne"
+    },
+    {
+      "event": "Robb proclaimed King in the North",
+      "pattern": "King in the North"
+    },
+    {
+      "event": "Drogo's death",
+      "pattern": "Drogo('s)? death|death of (Khal )?Drogo|Drogo[^.]{0,40}\\b(dies|died|is dead|smother)"
+    },
+    {
+      "event": "Dragons hatching",
+      "pattern": "dragons? (hatch|are born|emerge)|hatch(es|ed|ing)?\\b[^.]{0,20}(dragon|egg)|eggs hatch"
+    },
+    {
+      "event": "Daenerys losing her child",
+      "pattern": "stillborn|miscarri|Rhaego"
+    },
+    {
+      "event": "Jaime captured at the Whispering Wood",
+      "pattern": "Whispering Wood|Jaime[^.]{0,40}\\b(captured|taken prisoner|captive)"
+    },
+    {
+      "event": "The Red Wedding",
+      "pattern": "Red Wedding"
+    },
+    {
+      "event": "Joffrey's death",
+      "pattern": "Joffrey('s)? death|Joffrey[^.]{0,40}\\b(dies|died|is poisoned|was poisoned)\\b|Purple Wedding"
+    },
+    {
+      "event": "Characters introduced in later seasons",
+      "pattern": "\\b(Melisandre|Brienne|Davos|Ygritte|Tormund|Oberyn|Ramsay|Talisa|Missandei)\\b"
+    }
+  ]
+}

@@ -1,0 +1,36 @@
+services:
+  wherewerewe:
+    image: ghcr.io/nkskater/wherewerewe:latest
+    # build: { context: ., dockerfile: docker/Dockerfile }
+    container_name: wherewerewe
+    restart: unless-stopped
+    ports:
+      - "8765:8765"
+    environment:
+      - PUBLIC_URL=http://192.168.1.100:8765
+      - PLEX_URL=https://192.168.1.100:32400
+      - PLEX_TOKEN=
+      - VERIFY_SSL=false # Plex's certificate is for *.plex.direct, not the bare IP
+      - TAUTULLI_URL=http://192.168.1.100:8181
+      - TAUTULLI_API_KEY=
+      - LLM_BASE_URL=http://192.168.1.100:11434/v1
+      - LLM_MODEL=qwen2.5:14b
+      - WHISPER_MODEL=large-v3
+      - WHISPER_DEVICE=cuda
+      # Plex reports files as /data/TV Shows/...; map Plex's prefix to where the same
+      # folder is mounted below. Adjust the left side to whatever Plex sees.
+      - MEDIA_PATH_MAP=/data=/data/media
+      - TMDB_API_KEY=
+      - NTFY_URL=
+    volumes:
+      - /mnt/user/appdata/wherewerewe:/config
+      - /mnt/user/media:/data/media:ro
+    # Only needed for the Whisper fallback. Without it, episodes with no subtitles
+    # are summarized from their synopsis (or skipped if there is none).
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              device_ids: ["1"]
+              capabilities: [gpu]

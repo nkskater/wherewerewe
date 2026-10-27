@@ -1,0 +1,30 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#111317">
+  <title>{% block title %}Where Were We{% endblock %}</title>
+  <link rel="icon" href="/static/icon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="/static/app.css?v={{ version }}">
+</head>
+<body data-page="{% block page %}{% endblock %}">
+  <header class="topbar">
+    <a class="brand" href="/"><img src="/static/icon.svg" alt="" width="22" height="22">Where Were We</a>
+    <nav>
+      <a href="/" class="{{ 'active' if path == '/' }}">Watching</a>
+      <a href="/indexing" class="{{ 'active' if path == '/indexing' }}">Indexing</a>
+      <a href="/settings" class="{{ 'active' if path == '/settings' }}">Settings</a>
+    </nav>
+    <label class="user-pick">
+      <span class="sr-only">Viewer</span>
+      <select id="user-select" aria-label="Viewer"></select>
+    </label>
+  </header>
+  <main class="wrap">
+    {% block content %}{% endblock %}
+  </main>
+  <footer class="foot">Where Were We {{ version }} · recaps only use episodes you've finished</footer>
+  <script src="/static/app.js?v={{ version }}"></script>
+</body>
+</html>

@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+{% block title %}Recap · Where Were We{% endblock %}
+{% block page %}recap{% endblock %}
+{% block content %}
+<article class="recap" data-recap-id="{{ recap_id }}">
+  <header class="recap-head">
+    <p class="eyebrow">Previously on</p>
+    <h1 id="recap-show">…</h1>
+    <p class="muted" id="recap-boundary"></p>
+  </header>
+  <div class="recap-tools">
+    <div class="seg" id="recap-length" role="radiogroup" aria-label="Recap length">
+      <button data-length="quick" role="radio">Quick</button>
+      <button data-length="standard" role="radio">Standard</button>
+      <button data-length="deep" role="radio">Deep</button>
+    </div>
+    <button class="btn ghost" id="listen-btn" hidden>▶ Listen</button>
+    <a class="btn ghost" id="chars-btn">Characters</a>
+  </div>
+  <p class="status-pill" id="recap-status">Waiting…</p>
+  <div class="recap-text" id="recap-text" aria-live="polite"></div>
+  <div class="notice warn" id="recap-coverage" hidden></div>
+  <details class="verification" id="recap-verification" hidden>
+    <summary></summary>
+    <ul></ul>
+  </details>
+  <p class="notice error" id="recap-error" hidden></p>
+</article>
+{% endblock %}

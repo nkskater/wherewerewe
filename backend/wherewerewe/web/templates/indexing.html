@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+{% block title %}Indexing · Where Were We{% endblock %}
+{% block page %}indexing{% endblock %}
+{% block content %}
+<section class="page-head">
+  <h1>Indexing</h1>
+  <div class="actions">
+    <button class="btn ghost" id="sync-btn">Sync Plex &amp; Tautulli</button>
+  </div>
+</section>
+<label class="check"><input type="checkbox" id="watched-only" checked> Only shows someone is watching</label>
+<div class="table-wrap">
+  <table class="table" id="show-table">
+    <thead><tr><th>Show</th><th>Dialogue</th><th>Summaries</th><th>Rollups</th><th></th></tr></thead>
+    <tbody></tbody>
+  </table>
+</div>
+<p class="muted" id="shows-status"></p>
+
+<section class="page-head"><h2>Jobs</h2><p class="muted" id="job-counts"></p></section>
+<div class="table-wrap">
+  <table class="table" id="job-table">
+    <thead><tr><th>#</th><th>Type</th><th>Status</th><th>Detail</th><th></th></tr></thead>
+    <tbody></tbody>
+  </table>
+</div>
+{% endblock %}
