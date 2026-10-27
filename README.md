@@ -103,6 +103,11 @@ services:
 Then open `http://<host>:8765`, check the status panel on **Settings**, and run a sync from
 **Indexing**. An Unraid Community Apps template is in [`unraid/`](unraid/wherewerewe.xml).
 
+Two tags are published. `latest` includes the Whisper fallback and its CUDA libraries
+(about 5 GB). `latest-lite` leaves Whisper out (about 300 MB compressed); with it, episodes
+without subtitles are summarized from their synopsis. To build locally:
+`docker build -f docker/Dockerfile [--build-arg WHISPER=false] .`
+
 The image runs two processes, the API server and the worker (`wherewerewe run`). The GPU
 reservation in the compose file is only needed for Whisper. Without it, episodes with no
 subtitles are summarized from their synopsis, or skipped if there isn't one.
