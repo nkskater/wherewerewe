@@ -29,7 +29,9 @@
   <Config Name="WHISPER_MODEL" Target="WHISPER_MODEL" Default="large-v3" Description="faster-whisper model for episodes without subtitles" Type="Variable" Display="advanced" Required="false">large-v3</Config>
   <Config Name="WHISPER_DEVICE" Target="WHISPER_DEVICE" Default="cuda" Description="cuda or cpu" Type="Variable" Display="advanced" Required="false">cuda</Config>
   <Config Name="NVIDIA_VISIBLE_DEVICES" Target="NVIDIA_VISIBLE_DEVICES" Default="" Description="GPU UUID for Whisper (leave empty and remove --runtime=nvidia to run without a GPU)" Type="Variable" Display="advanced" Required="false"/>
-  <Config Name="TMDB_API_KEY" Target="TMDB_API_KEY" Default="" Description="Optional: episode synopses for extra grounding" Type="Variable" Display="advanced" Required="false" Mask="true"/>
+  <Config Name="ADMIN_PASSWORD" Target="ADMIN_PASSWORD" Default="" Description="Setting one turns login on (admin password + Sign in with Plex)" Type="Variable" Display="always" Required="false" Mask="true"/>
+  <Config Name="TMDB_API_KEY" Target="TMDB_API_KEY" Default="" Description="Optional: episode synopses and credited cast" Type="Variable" Display="advanced" Required="false" Mask="true"/>
+  <Config Name="SUMMARY_SOURCE" Target="SUMMARY_SOURCE" Default="dialogue" Description="dialogue (model reads subtitles) or synopsis (TMDB/Plex synopsis, no GPU)" Type="Variable" Display="advanced" Required="false">dialogue</Config>
   <Config Name="NTFY_URL" Target="NTFY_URL" Default="" Description="Optional: default ntfy topic URL for recap pushes" Type="Variable" Display="advanced" Required="false"/>
   <Config Name="DISCORD_WEBHOOK_URL" Target="DISCORD_WEBHOOK_URL" Default="" Description="Optional: Discord webhook for recap pushes" Type="Variable" Display="advanced" Required="false" Mask="true"/>
 </Container>

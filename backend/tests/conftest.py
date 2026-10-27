@@ -124,6 +124,9 @@ def isolated_db(tmp_path, monkeypatch):
         "LLM_MODEL",
         "WEBHOOK_SECRET",
         "MEDIA_PATH_MAP",
+        "SUMMARY_SOURCE",
+        "AUTO_INDEX",
+        "ADMIN_PASSWORD",
     ):
         monkeypatch.delenv(var, raising=False)
     monkeypatch.setenv("WHISPER_ENABLED", "false")

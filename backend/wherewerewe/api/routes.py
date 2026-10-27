@@ -15,6 +15,7 @@ from pydantic import BaseModel, Field
 from sqlalchemy import func, select, text
 from sqlalchemy.orm import Session
 
+from ..auth import OPEN, Principal, hash_password
 from ..config import ALL_RUNTIME_KEYS, RUNTIME_KEYS, SECRET_KEYS, Settings, parse_setting
 from ..db import load_settings, new_session
 from ..llm import prompts
@@ -41,6 +42,20 @@ def _iso(dt: datetime | None) -> str | None:
     return dt.isoformat() + "Z" if dt else None
 
 
+def who(request: Request) -> Principal:
+    """The signed-in person (set by the login middleware); everyone is admin with login off."""
+    return getattr(request.state, "principal", OPEN)
+
+
+def _own(person: Principal, user_id: int | None) -> int | None:
+    """Viewers only ever act as themselves. Returns the user id to use."""
+    if person.admin:
+        return user_id
+    if user_id is not None and user_id != person.user_id:
+        raise HTTPException(403, "that belongs to another viewer")
+    return person.user_id
+
+
 # -- users -------------------------------------------------------------------------------
 
 
@@ -58,10 +73,14 @@ def user_json(user: User, settings: Settings) -> dict:
 
 
 @router.get("/users")
-def list_users(session: Session = Depends(get_session)) -> list[dict]:
+def list_users(
+    session: Session = Depends(get_session), person: Principal = Depends(who)
+) -> list[dict]:
     settings = load_settings(session)
-    users = session.scalars(select(User).order_by(func.lower(User.display_name)))
-    return [user_json(u, settings) for u in users]
+    query = select(User).order_by(func.lower(User.display_name))
+    if not person.admin:
+        query = query.where(User.id == person.user_id)
+    return [user_json(u, settings) for u in session.scalars(query)]
 
 
 class UserUpdate(BaseModel):
@@ -72,7 +91,13 @@ class UserUpdate(BaseModel):
 
 
 @router.put("/users/{user_id}")
-def update_user(user_id: int, body: UserUpdate, session: Session = Depends(get_session)) -> dict:
+def update_user(
+    user_id: int,
+    body: UserUpdate,
+    session: Session = Depends(get_session),
+    person: Principal = Depends(who),
+) -> dict:
+    _own(person, user_id)
     user = session.get(User, user_id)
     if user is None:
         raise HTTPException(404, "user not found")
@@ -88,7 +113,10 @@ def update_user(user_id: int, body: UserUpdate, session: Session = Depends(get_s
 
 
 @router.get("/users/{user_id}/shows")
-def user_shows(user_id: int, session: Session = Depends(get_session)) -> list[dict]:
+def user_shows(
+    user_id: int, session: Session = Depends(get_session), person: Principal = Depends(who)
+) -> list[dict]:
+    _own(person, user_id)
     user = session.get(User, user_id)
     if user is None:
         raise HTTPException(404, "user not found")
@@ -198,8 +226,10 @@ def characters(
     until: str | None = None,
     q: str | None = None,
     session: Session = Depends(get_session),
+    person: Principal = Depends(who),
 ) -> dict:
     """The character ledger as of the user's position (never later)."""
+    user = _own(person, user)
     if session.get(Show, show_id) is None:
         raise HTTPException(404, "show not found")
     try:
@@ -228,8 +258,14 @@ class WhoisRequest(BaseModel):
 
 
 @router.post("/shows/{show_id}/whois")
-def whois(show_id: int, body: WhoisRequest, session: Session = Depends(get_session)) -> dict:
+def whois(
+    show_id: int,
+    body: WhoisRequest,
+    session: Session = Depends(get_session),
+    person: Principal = Depends(who),
+) -> dict:
     """Answer "who is X again?" from the ledger as of the user's position."""
+    body.user = _own(person, body.user)
     if session.get(Show, show_id) is None:
         raise HTTPException(404, "show not found")
     try:
@@ -327,7 +363,10 @@ def recap_json(session: Session, recap: Recap) -> dict:
 
 
 @router.post("/recaps", status_code=201)
-def post_recap(body: RecapRequest, session: Session = Depends(get_session)) -> dict:
+def post_recap(
+    body: RecapRequest, session: Session = Depends(get_session), person: Principal = Depends(who)
+) -> dict:
+    body.user_id = _own(person, body.user_id)
     settings = load_settings(session)
     boundary_id = None
     if body.until:
@@ -406,11 +445,15 @@ async def _recap_events(recap_id: int, request: Request):
 
 @router.get("/recaps/{recap_id}")
 def get_recap(
-    recap_id: int, request: Request, stream: bool = False, session: Session = Depends(get_session)
+    recap_id: int,
+    request: Request,
+    stream: bool = False,
+    session: Session = Depends(get_session),
+    person: Principal = Depends(who),
 ):
     """Fetch a recap. With ?stream=true or Accept: text/event-stream, stream it as SSE."""
     recap = session.get(Recap, recap_id)
-    if recap is None:
+    if recap is None or (not person.admin and recap.user_id != person.user_id):
         raise HTTPException(404, "recap not found")
     if stream or "text/event-stream" in request.headers.get("accept", ""):
         return StreamingResponse(
@@ -581,6 +624,8 @@ def put_settings(
             errors[key] = str(exc).splitlines()[0]
             continue
         stored = str(parsed).lower() if isinstance(parsed, bool) else str(parsed)
+        if key == "admin_password":
+            stored = hash_password(stored)
         if row is None:
             session.add(Setting(key=key, value=stored))
         else:

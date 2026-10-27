@@ -14,9 +14,10 @@ from ..llm import prompts
 from ..llm.client import LLM, get_llm
 from ..llm.ledger import rebuild_ledger, update_ledger
 from ..llm.rollup import season_episode_summaries
-from ..llm.summarize import summarize_episode
+from ..llm.summarize import summarize_episode, synopsis_summary
 from ..models import (
     Episode,
+    EpisodeCast,
     EpisodeSource,
     EpisodeSummary,
     SeasonRollup,
@@ -24,7 +25,7 @@ from ..models import (
     WatchProgress,
 )
 from ..sources.resolver import NoSourceError, resolve_source
-from ..sources.tmdb import TMDBClient
+from ..sources.tmdb import TMDBClient, credited_in
 from ..worker import queue
 from .library import current_summary, group_label, group_members, regular_episodes
 
@@ -34,10 +35,20 @@ AUTO_INDEX_ACTIVE_DAYS = 30
 BACKFILL_ACTIVE_DAYS = 365
 
 
-def _fill_overviews(
-    session: Session, settings: Settings, show: Show, members: list[Episode]
-) -> None:
-    if not settings.tmdb_api_key or not any(m.tmdb_overview is None for m in members):
+SYNOPSIS_MODEL = "synopsis"  # EpisodeSummary.model for summaries built without a model
+
+
+def summary_model(settings: Settings) -> str:
+    """The model key summaries are cached under for the current settings."""
+    return SYNOPSIS_MODEL if settings.summary_source == "synopsis" else settings.llm_model
+
+
+def _fill_tmdb(session: Session, settings: Settings, show: Show, members: list[Episode]) -> None:
+    """Fetch each episode's TMDB overview and credited cast once."""
+    if not settings.tmdb_api_key:
+        return
+    missing = [m for m in members if session.get(EpisodeCast, m.id) is None]
+    if not missing:
         return
     try:
         client = TMDBClient(settings.tmdb_api_key)
@@ -46,15 +57,24 @@ def _fill_overviews(
                 show.tmdb_id = client.find_show(show.title, show.year)
             if show.tmdb_id is None:
                 return
-            for m in members:
-                if m.tmdb_overview is None:
-                    m.tmdb_overview = (
-                        client.episode_overview(show.tmdb_id, m.season, m.episode) or ""
-                    )
+            for m in missing:
+                data = client.episode(show.tmdb_id, m.season, m.episode) or {}
+                m.tmdb_overview = data.get("overview") or ""
+                session.add(EpisodeCast(episode_id=m.id, cast_json=data.get("cast") or []))
+            session.flush()
         finally:
             client.close()
     except Exception as exc:  # TMDB is supplementary; never fail indexing over it
         log.warning("TMDB lookup failed for %s: %s", show.title, exc)
+
+
+def _cast(session: Session, members: list[Episode], text: str) -> list[dict]:
+    people: dict[str, dict] = {}
+    for m in members:
+        row = session.get(EpisodeCast, m.id)
+        for person in row.cast_json if row else []:
+            people.setdefault(person["character"].lower(), person)
+    return credited_in(list(people.values()), text)
 
 
 def _source_path(settings: Settings, ep: Episode, source_type: str) -> Path:
@@ -109,13 +129,13 @@ def index_episode(
         return f"{ep.code}: specials are not indexed"
     if ep.part_of_episode_id:
         return f"{ep.code}: summarized with the first episode in its file"
-    llm = llm or get_llm(settings)
+    model = summary_model(settings)
     members = group_members(session, ep)
     label = group_label(members)
     existing = session.scalar(
         select(EpisodeSummary).where(
             EpisodeSummary.episode_id == ep.id,
-            EpisodeSummary.model == llm.model,
+            EpisodeSummary.model == model,
             EpisodeSummary.prompt_version == prompts.SUMMARY_VERSION,
         )
     )
@@ -124,25 +144,32 @@ def index_episode(
 
     show = session.get(Show, ep.show_id)
     assert show is not None
-    _fill_overviews(session, settings, show, members)
+    _fill_tmdb(session, settings, show, members)
     overview = "\n\n".join(m.overview for m in members if m.overview) or None
 
-    try:
-        source_type, text, detail = get_source_text(session, settings, ep, members, force)
-    except NoSourceError as exc:
-        if not (overview and settings.allow_overview_only):
-            raise
-        log.info("%s %s: no dialogue (%s); summarizing from the synopsis", show.title, label, exc)
-        source_type, text, detail = "overview", None, "synopsis only"
-
-    # Release the write lock before the slow model call, so a recap or another lane can
-    # write meanwhile (SQLite allows one writer at a time).
-    session.commit()
-    summary = summarize_episode(llm, label, overview, text).model_dump()
+    if model == SYNOPSIS_MODEL:
+        if not overview:
+            raise NoSourceError("no synopsis from TMDB or Plex")
+        summary = synopsis_summary(label, overview, _cast(session, members, overview))
+        source_type, detail = "synopsis", "the synopsis"
+    else:
+        try:
+            source_type, text, detail = get_source_text(session, settings, ep, members, force)
+        except NoSourceError as exc:
+            if not (overview and settings.allow_overview_only):
+                raise
+            log.info("%s %s: no dialogue (%s); using the synopsis", show.title, label, exc)
+            source_type, text, detail = "overview", None, "synopsis only"
+        cast = _cast(session, members, f"{text or ''}\n{overview or ''}")
+        llm = llm or get_llm(settings)
+        # Release the write lock before the slow model call, so a recap or another lane can
+        # write meanwhile (SQLite allows one writer at a time).
+        session.commit()
+        summary = summarize_episode(llm, label, overview, text, cast).model_dump()
     if existing is None:
         existing = EpisodeSummary(
             episode_id=ep.id,
-            model=llm.model,
+            model=model,
             prompt_version=prompts.SUMMARY_VERSION,
             source_type=source_type,
             summary_json=summary,
@@ -153,7 +180,7 @@ def index_episode(
         existing.created_at = datetime.now(UTC).replace(tzinfo=None)
     session.flush()
     update_ledger(session, ep, summary)
-    maybe_enqueue_rollup(session, ep.show_id, ep.season, llm.model)
+    maybe_enqueue_rollup(session, ep.show_id, ep.season, settings.llm_model)
     return f"{label}: summarized from {detail}"
 
 
@@ -171,7 +198,7 @@ def rebuild_ledgers(session: Session, settings: Settings) -> int:
         for ep in regular_episodes(session, show_id):
             if ep.part_of_episode_id:
                 continue
-            row = current_summary(session, ep.id, settings.llm_model, prompts.SUMMARY_VERSION)
+            row = current_summary(session, ep.id, summary_model(settings), prompts.SUMMARY_VERSION)
             if row is not None:
                 pairs.append((ep, row.summary_json))
         rebuild_ledger(session, show_id, pairs)

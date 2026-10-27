@@ -130,7 +130,10 @@ Values saved there override the environment.
 | `VERIFY_MODEL` | same as `LLM_MODEL` | Model for the verification pass |
 | `MEDIA_PATH_MAP` | | `<plex path>=<container path>;...` |
 | `WHISPER_MODEL`, `WHISPER_DEVICE` | `large-v3`, `cuda` | `WHISPER_ENABLED=false` to turn it off |
-| `TMDB_API_KEY` | | Optional synopsis grounding (v3 key or v4 token) |
+| `TMDB_API_KEY` | | Episode synopses and credited cast (v3 key or v4 token, free at themoviedb.org) |
+| `SUMMARY_SOURCE` | `dialogue` | `dialogue`: the model summarizes subtitles. `synopsis`: summaries come from the TMDB/Plex synopsis and cast with no model call (fast, less detail) |
+| `ADMIN_PASSWORD` | | Turns login on. Stored hashed when set from the Settings page |
+| `PLEX_LOGIN` | `true` | Allow Sign in with Plex once login is on |
 | `NTFY_URL`, `NTFY_TOKEN`, `DISCORD_WEBHOOK_URL` | | Defaults; each viewer can have their own target |
 | `WATCHED_PERCENT` | `90` | When an episode counts as finished |
 | `DEFAULT_GAP_DAYS` | `10` | Days away before a recap is pushed (per-viewer override) |
@@ -152,6 +155,26 @@ In Tautulli, go to **Settings → Notification Agents → Add → Webhook**. Set
  "grandparent_rating_key": "{grandparent_rating_key}",
  "season_num": "{season_num}", "episode_num": "{episode_num}"}
 ```
+
+### Login
+
+Login is off until you set `ADMIN_PASSWORD` (or set it under Settings → Security). Then:
+
+- **Admin password**: full access.
+- **Sign in with Plex**: anyone with access to your Plex server. The server's owner is an
+  admin; everyone else sees only their own shows, recaps and characters, and can't open
+  Library, Activity, Settings or System. Nothing from plex.tv is kept apart from the account
+  id and name.
+
+The Tautulli webhook stays reachable without signing in; set `WEBHOOK_SECRET` to protect it.
+
+### TMDB
+
+With a TMDB key, each watched episode's synopsis and credited cast are fetched once. In
+`dialogue` mode they're given to the model next to the subtitles, so it uses the right
+character names. In `synopsis` mode the summary is built from them directly, with no model
+call: a 200-episode show indexes in about a minute. Credits are read per episode, and a
+series regular only counts once that episode mentions them, so names don't arrive early.
 
 ## Command line
 

@@ -21,6 +21,8 @@ services:
       # folder is mounted below. Adjust the left side to whatever Plex sees.
       - MEDIA_PATH_MAP=/data=/data/media
       - TMDB_API_KEY=
+      - SUMMARY_SOURCE=dialogue # or synopsis: no GPU, from the TMDB/Plex synopsis
+      - ADMIN_PASSWORD= # setting one turns login on
       - NTFY_URL=
     volumes:
       - /mnt/user/appdata/wherewerewe:/config

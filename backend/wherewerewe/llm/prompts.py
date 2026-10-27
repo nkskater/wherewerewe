@@ -79,11 +79,21 @@ Respond with JSON matching the schema."""
 
 
 def summary_user(
-    code: str, overview: str | None, transcript: str | None, notes: str | None = None
+    code: str,
+    overview: str | None,
+    transcript: str | None,
+    notes: str | None = None,
+    cast: list[dict] | None = None,
 ) -> str:
     parts = [f"Episode: {code}"]
     if overview:
         parts.append(f"Official synopsis:\n{overview}")
+    if cast:
+        names = ", ".join(c["character"] + (" (guest)" if c.get("guest") else "") for c in cast)
+        parts.append(
+            "Characters credited in this episode. Use these spellings, and list only those who "
+            f"actually appear or are discussed:\n{names}"
+        )
     if notes:
         parts.append(f"Notes on the episode's dialogue, in order:\n{notes}")
     elif transcript:

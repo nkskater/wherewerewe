@@ -51,7 +51,7 @@ def _index_show(session: Session, settings: Settings, job: Job) -> str:
         int(job.payload["show_id"]),
         scope=job.payload.get("scope", "watched"),
         force=bool(job.payload.get("force")),
-        model=settings.llm_model,
+        model=indexing.summary_model(settings),
     )
     return f"queued {count} episodes"
 

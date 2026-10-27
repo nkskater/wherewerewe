@@ -96,6 +96,18 @@ class Episode(Base):
         return self.tmdb_overview or self.plex_summary
 
 
+class EpisodeCast(Base):
+    """Characters TMDB credits in one episode: [{"character", "actor", "guest"}]."""
+
+    __tablename__ = "episode_cast"
+
+    episode_id: Mapped[int] = mapped_column(
+        ForeignKey("episodes.id", ondelete="CASCADE"), primary_key=True
+    )
+    cast_json: Mapped[list[Any]] = mapped_column(default=list)
+    fetched_at: Mapped[datetime] = mapped_column(DateTime, default=utcnow)
+
+
 class EpisodeSource(Base):
     __tablename__ = "episode_sources"
     __table_args__ = (UniqueConstraint("episode_id", "source_type"),)

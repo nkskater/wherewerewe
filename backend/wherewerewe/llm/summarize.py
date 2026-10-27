@@ -8,6 +8,7 @@ from which summaries a recap is assembled from.
 from __future__ import annotations
 
 import logging
+import re
 
 from . import prompts
 from .client import LLM, chat_json, estimate_tokens
@@ -32,8 +33,36 @@ def _split_lines(text: str, max_tokens: int) -> list[str]:
     return chunks
 
 
+def synopsis_summary(code: str, overview: str, cast: list[dict]) -> dict:
+    """An episode summary built from the synopsis and credits alone, with no model call."""
+    sentences = [s.strip() for s in re.split(r"(?<=[.!?])\s+", overview) if s.strip()]
+    characters = []
+    for person in cast:
+        name, *aliases = [n.strip() for n in person["character"].split("/") if n.strip()]
+        characters.append(
+            {
+                "name": name,
+                "aliases": aliases,
+                "role": f"Played by {person['actor']}" if person.get("actor") else "",
+                "status": "",
+                "new_info": "",
+                "relationships": [],
+            }
+        )
+    return prompts.EpisodeSummaryOut(
+        episode=code,
+        plot_beats=sentences,
+        characters=[prompts.CharacterUpdate(**c) for c in characters],
+        cliffhanger=sentences[-1] if sentences else "",
+    ).model_dump()
+
+
 def summarize_episode(
-    llm: LLM, code: str, overview: str | None, transcript: str | None
+    llm: LLM,
+    code: str,
+    overview: str | None,
+    transcript: str | None,
+    cast: list[dict] | None = None,
 ) -> prompts.EpisodeSummaryOut:
     budget = (
         llm.context_tokens - SUMMARY_MAX_TOKENS - _PROMPT_OVERHEAD - estimate_tokens(overview or "")
@@ -59,7 +88,10 @@ def summarize_episode(
         llm,
         [
             {"role": "system", "content": prompts.SUMMARY_SYSTEM},
-            {"role": "user", "content": prompts.summary_user(code, overview, transcript, notes)},
+            {
+                "role": "user",
+                "content": prompts.summary_user(code, overview, transcript, notes, cast),
+            },
         ],
         prompts.EpisodeSummaryOut,
         max_tokens=SUMMARY_MAX_TOKENS,

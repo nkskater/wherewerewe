@@ -156,7 +156,10 @@ function initSidebar() {
   for (const a of $$("#sidebar a")) a.addEventListener("click", () => set(false));
 }
 
+const isAdmin = () => document.body.dataset.admin === "true";
+
 async function refreshQueueBadge() {
+  if (!isAdmin()) return;
   try {
     const { counts } = await api("/api/jobs?limit=1");
     const n = (counts.queued || 0) + (counts.running || 0);
@@ -642,7 +645,7 @@ async function pageSystem() {
 // ---- settings --------------------------------------------------------------------------
 
 const GROUP_NAMES = { Connections: "Servers", Model: "Language model", Sources: "Dialogue",
-  Recaps: "Recaps", Notifications: "Notifications", Schedule: "Schedule" };
+  Recaps: "Recaps", Notifications: "Notifications", Security: "Security", Schedule: "Schedule" };
 const FIELD_LABELS = {
   plex_url: ["Plex server", "e.g. https://192.168.1.100:32400"],
   plex_token: ["Plex token"],
@@ -677,8 +680,17 @@ const FIELD_LABELS = {
   discord_webhook_url: ["Discord webhook"],
   sync_interval_minutes: ["Check watch history every", "minutes"],
   library_scan_interval_minutes: ["Rescan the library every", "minutes"],
+  admin_password: ["Admin password", "setting one turns login on"],
+  plex_login: ["Sign in with Plex", "anyone with access to your Plex server; its owner is an admin"],
+  summary_source: ["Episode summaries from"],
   auto_index: ["Index automatically", "when someone starts a show, and overnight; uses the GPU without asking"],
   backfill_hour: ["Overnight indexing at", "hour, 0–23; only with automatic indexing on"],
+};
+
+const CHOICES = {
+  llm_api: [["auto", "Detect"], ["ollama", "Ollama"], ["openai", "OpenAI-compatible"]],
+  summary_source: [["dialogue", "Dialogue, with the model (detailed, uses the GPU)"],
+    ["synopsis", "TMDB/Plex synopsis and cast (fast, no GPU)"]],
 };
 
 const slug = (s) => s.toLowerCase().replace(/[^a-z0-9]+/g, "-");
@@ -700,10 +712,9 @@ async function pageSettings() {
         let input;
         if (f.type === "bool") {
           input = `<select id="${id}" name="${f.key}"><option value="true">Yes</option><option value="false">No</option></select>`;
-        } else if (f.key === "llm_api") {
+        } else if (CHOICES[f.key]) {
           input = `<select id="${id}" name="${f.key}">` +
-            [["auto", "Detect"], ["ollama", "Ollama"], ["openai", "OpenAI-compatible"]]
-              .map(([v, t]) => `<option value="${v}">${t}</option>`).join("") + "</select>";
+            CHOICES[f.key].map(([v, t]) => `<option value="${v}">${t}</option>`).join("") + "</select>";
         } else {
           const type = f.secret ? "password" : (f.type === "int" || f.type === "float") ? "number" : "text";
           const extra = f.type === "float" ? ' step="any"' : "";
@@ -768,10 +779,49 @@ async function pageSettings() {
   });
 }
 
+// ---- login -----------------------------------------------------------------------------
+
+function pageLogin() {
+  const next = $(".login-card").dataset.next || "/";
+  const msg = $("#login-msg");
+  const plex = $("#plex-btn");
+  if (plex) {
+    plex.addEventListener("click", async () => {
+      plex.disabled = true;
+      try {
+        const { url } = await api("/auth/plex/start", { method: "POST", body: { next } });
+        location.href = url;
+      } catch (err) { msg.textContent = err.message; plex.disabled = false; }
+    });
+  }
+  $("#password-form").addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const btn = $("button[type=submit]", e.currentTarget);
+    btn.disabled = true;
+    msg.textContent = "";
+    try {
+      const res = await api("/auth/password", { method: "POST", body: { password: $("#password").value, next } });
+      location.href = res.next;
+    } catch (err) { msg.textContent = err.message === "wrong password" ? "Wrong password." : err.message; }
+    btn.disabled = false;
+  });
+}
+
+function initLogout() {
+  const btn = $("#logout-btn");
+  if (!btn) return;
+  btn.addEventListener("click", async () => {
+    try { await api("/auth/logout", { method: "POST" }); } catch (_) { /* leave anyway */ }
+    location.href = "/login";
+  });
+}
+
 // ---- boot ------------------------------------------------------------------------------
 
 (async () => {
+  if (document.body.dataset.page === "login") { pageLogin(); return; }
   initTheme();
+  initLogout();
   initSidebar();
   initSearch();
   refreshQueueBadge();

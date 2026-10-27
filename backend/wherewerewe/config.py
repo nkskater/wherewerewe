@@ -53,6 +53,10 @@ class Settings(BaseSettings):
     whisper_device: str = "cuda"
     whisper_compute_type: str = ""  # default: float16 on cuda, int8 on cpu
     tmdb_api_key: str = ""
+    # "dialogue": summarize each episode's subtitles with the model (TMDB/Plex synopsis and
+    # TMDB cast as grounding). "synopsis": build summaries from the synopsis and cast alone,
+    # with no model call; much faster, less detailed.
+    summary_source: Literal["dialogue", "synopsis"] = "dialogue"
     allow_overview_only: bool = True  # summarize from the synopsis when there is no dialogue
 
     # Notifications
@@ -71,6 +75,11 @@ class Settings(BaseSettings):
     # Scheduling
     sync_interval_minutes: int = 15
     library_scan_interval_minutes: int = 360
+    # Login. Setting an admin password turns it on; Plex sign-in then works for everyone
+    # with access to the Plex server (the server owner is an admin).
+    admin_password: str = ""
+    plex_login: bool = True
+
     # Off: the GPU only runs when someone asks (Index, Recap). On: index a show when anyone
     # starts watching it, and catch up overnight at backfill_hour.
     auto_index: bool = False
@@ -124,6 +133,7 @@ RUNTIME_KEYS: dict[str, list[str]] = {
         "verify_model",
     ],
     "Sources": [
+        "summary_source",
         "subtitle_languages",
         "whisper_enabled",
         "whisper_model",
@@ -139,6 +149,7 @@ RUNTIME_KEYS: dict[str, list[str]] = {
         "recap_cache_hours",
     ],
     "Notifications": ["ntfy_url", "ntfy_token", "discord_webhook_url"],
+    "Security": ["admin_password", "plex_login"],
     "Schedule": [
         "sync_interval_minutes",
         "library_scan_interval_minutes",
@@ -147,6 +158,7 @@ RUNTIME_KEYS: dict[str, list[str]] = {
     ],
 }
 SECRET_KEYS = {
+    "admin_password",
     "plex_token",
     "tautulli_api_key",
     "llm_api_key",
