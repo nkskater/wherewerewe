@@ -4,26 +4,28 @@
 {% block content %}
 <article class="recap" data-recap-id="{{ recap_id }}">
   <header class="recap-head">
-    <p class="eyebrow">Previously on</p>
-    <h1 id="recap-show">…</h1>
-    <p class="muted" id="recap-boundary"></p>
+    <p class="kicker">Previously on</p>
+    <h1 id="recap-show">&nbsp;</h1>
+    <p class="recap-through" id="recap-boundary"></p>
   </header>
-  <div class="recap-tools">
-    <div class="seg" id="recap-length" role="radiogroup" aria-label="Recap length">
+  <div class="recap-bar">
+    <div class="tabs" id="recap-length" role="radiogroup" aria-label="Recap length">
       <button data-length="quick" role="radio">Quick</button>
       <button data-length="standard" role="radio">Standard</button>
       <button data-length="deep" role="radio">Deep</button>
     </div>
-    <button class="btn ghost" id="listen-btn" hidden>▶ Listen</button>
-    <a class="btn ghost" id="chars-btn">Characters</a>
+    <div class="recap-links">
+      <button class="link" id="listen-btn" type="button" hidden>Read aloud</button>
+      <a class="link" id="chars-btn">Characters</a>
+    </div>
   </div>
-  <p class="status-pill" id="recap-status">Waiting…</p>
+  <p class="status" id="recap-status"><span class="status-dot"></span><span class="status-text">Waiting…</span></p>
   <div class="recap-text" id="recap-text" aria-live="polite"></div>
-  <div class="notice warn" id="recap-coverage" hidden></div>
-  <details class="verification" id="recap-verification" hidden>
+  <aside class="note note-warn" id="recap-coverage" hidden></aside>
+  <details class="footnote" id="recap-verification" hidden>
     <summary></summary>
-    <ul></ul>
+    <ol></ol>
   </details>
-  <p class="notice error" id="recap-error" hidden></p>
+  <p class="note note-error" id="recap-error" hidden></p>
 </article>
 {% endblock %}

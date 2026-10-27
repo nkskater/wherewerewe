@@ -2,37 +2,39 @@
 {% block title %}Settings · Where Were We{% endblock %}
 {% block page %}settings{% endblock %}
 {% block content %}
-<section class="page-head"><h1>Settings</h1></section>
+<div class="page-title"><h1>Settings</h1></div>
 
-<section class="card">
-  <h2>Status</h2>
-  <ul class="health" id="health"><li class="muted">Checking…</li></ul>
+<section class="panel">
+  <h2>Connections</h2>
+  <ul class="checks" id="health"><li class="subtle">Checking…</li></ul>
 </section>
 
-<form id="settings-form" class="card">
+<form id="settings-form" class="panel">
   <div id="settings-groups"></div>
-  <p class="muted small">Values saved here override environment variables. Clear a field and save to
-    go back to the environment value. Secrets show as ********; leave them as-is to keep them.</p>
-  <div class="actions">
-    <button class="btn primary" type="submit">Save settings</button>
-    <span id="settings-msg" class="muted"></span>
+  <div class="form-foot">
+    <button class="btn btn-primary" type="submit">Save</button>
+    <span id="settings-msg" class="subtle"></span>
   </div>
+  <p class="fineprint">Saved values override environment variables. Clear a field and save to fall back
+    to the environment. Secrets are shown as ••••••••; leave them alone to keep them.</p>
 </form>
 
-<section class="card">
+<section class="panel">
   <h2>Viewers</h2>
-  <p class="muted small">Viewers come from Tautulli history. Notification target is a ntfy topic URL
-    (https://ntfy.sh/your-topic) or a Discord webhook URL; leave it empty to use the global ones.</p>
-  <div id="user-settings"><p class="muted">Loading…</p></div>
+  <p class="subtle">Viewers come from Tautulli. Pushes go to a ntfy topic URL
+    (https://ntfy.sh/your-topic) or a Discord webhook URL; leave it blank to use the defaults above.</p>
+  <div id="user-settings"><p class="subtle">Loading…</p></div>
 </section>
 
-<section class="card">
+<section class="panel">
   <h2>Tautulli webhook</h2>
-  <p class="small">In Tautulli: Settings → Notification Agents → Add → <b>Webhook</b>.
-    Webhook URL: <code id="webhook-url"></code>, method <b>POST</b>.
-    Under Triggers enable <b>Playback Start</b>, <b>Playback Stop</b> and <b>Watched</b>.
-    Under Data, use this JSON body for all three:</p>
-  <pre class="code">{
+  <ol class="steps">
+    <li>In Tautulli, open <b>Settings → Notification Agents → Add a new notification agent → Webhook</b>.</li>
+    <li>Webhook URL <code id="webhook-url"></code>, method <b>POST</b>.</li>
+    <li>Triggers: <b>Playback Start</b>, <b>Playback Stop</b>, <b>Watched</b>.</li>
+    <li>Data: paste this as the JSON body for all three.</li>
+  </ol>
+  <pre class="codeblock">{
   "action": "{action}",
   "media_type": "{media_type}",
   "user_id": "{user_id}",

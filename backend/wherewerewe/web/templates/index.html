@@ -1,28 +1,33 @@
 {% extends "base.html" %}
 {% block page %}home{% endblock %}
 {% block content %}
-<section class="page-head">
-  <h1>Continue watching</h1>
-  <div class="seg" id="length-seg" role="radiogroup" aria-label="Recap length">
+<div class="page-title">
+  <h1>Up next</h1>
+  <div class="tabs" id="length-seg" role="radiogroup" aria-label="Recap length">
+    <span class="tabs-label">Recap</span>
     <button data-length="quick" role="radio">Quick</button>
     <button data-length="standard" role="radio">Standard</button>
     <button data-length="deep" role="radio">Deep</button>
   </div>
-</section>
-<p class="muted" id="home-status">Loading…</p>
-<div class="grid" id="show-grid"></div>
+</div>
+<p class="empty" id="home-status">Loading…</p>
+<ol class="queue" id="show-grid"></ol>
 <template id="show-card">
-  <article class="card show">
-    <div class="poster"><img alt="" loading="lazy"><span class="poster-fallback"></span></div>
-    <div class="show-body">
-      <h2 class="show-title"></h2>
-      <p class="show-pos"></p>
-      <p class="show-next muted"></p>
-      <div class="actions">
-        <button class="btn primary recap-btn">Recap</button>
-        <a class="btn ghost chars-link">Characters</a>
+  <li class="queue-row">
+    <div class="poster"><img alt="" loading="lazy"><span class="poster-letter"></span></div>
+    <div class="queue-main">
+      <h2 class="queue-title"></h2>
+      <p class="queue-pos"><span class="code from"></span><span class="arrow" aria-hidden="true">→</span><span class="code to"></span><span class="next-title"></span></p>
+      <div class="rail" aria-hidden="true"></div>
+      <p class="queue-count"></p>
+    </div>
+    <div class="queue-side">
+      <p class="away"><span class="away-n"></span><span class="away-unit"></span></p>
+      <div class="queue-actions">
+        <button class="btn btn-primary recap-btn" type="button">Recap</button>
+        <a class="link chars-link">Characters</a>
       </div>
     </div>
-  </article>
+  </li>
 </template>
 {% endblock %}

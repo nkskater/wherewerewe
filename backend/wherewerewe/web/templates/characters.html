@@ -2,29 +2,28 @@
 {% block title %}Characters · Where Were We{% endblock %}
 {% block page %}characters{% endblock %}
 {% block content %}
-<section class="page-head" data-show-id="{{ show_id }}">
+<div class="page-title" data-show-id="{{ show_id }}">
   <div>
-    <h1 id="chars-title">Characters</h1>
-    <p class="muted" id="chars-asof"></p>
+    <p class="kicker" id="chars-show">&nbsp;</p>
+    <h1>Who's who</h1>
+    <p class="subtle" id="chars-asof"></p>
   </div>
-</section>
-<input type="search" id="chars-search" class="search" placeholder="Search by name…" autocomplete="off">
-<p class="muted" id="chars-status">Loading…</p>
-<div class="char-list" id="char-list"></div>
+</div>
+<input type="search" id="chars-search" class="search" placeholder="Find a character" autocomplete="off">
+<p class="empty" id="chars-status">Loading…</p>
+<ul class="people" id="char-list"></ul>
 <template id="char-card">
-  <article class="card char">
-    <div class="char-head">
-      <h2 class="char-name"></h2>
-      <span class="char-seen muted"></span>
+  <li class="person">
+    <div class="person-head">
+      <h2 class="person-name"></h2>
+      <span class="code person-seen"></span>
     </div>
-    <p class="char-aliases muted"></p>
-    <p class="char-role"></p>
-    <p class="char-status"></p>
-    <details class="char-history"><summary>Episode notes</summary><ul></ul></details>
-    <div class="actions">
-      <button class="btn ghost ask-btn">Who is this again?</button>
-    </div>
-    <p class="char-answer" hidden></p>
-  </article>
+    <p class="person-aka"></p>
+    <p class="person-role"></p>
+    <p class="person-status"></p>
+    <details class="person-history"><summary>Episode notes</summary><ol></ol></details>
+    <button class="link ask-btn" type="button">Remind me who this is</button>
+    <p class="person-answer" hidden></p>
+  </li>
 </template>
 {% endblock %}

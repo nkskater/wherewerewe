@@ -1,26 +1,29 @@
 {% extends "base.html" %}
-{% block title %}Indexing · Where Were We{% endblock %}
+{% block title %}Library · Where Were We{% endblock %}
 {% block page %}indexing{% endblock %}
 {% block content %}
-<section class="page-head">
-  <h1>Indexing</h1>
-  <div class="actions">
-    <button class="btn ghost" id="sync-btn">Sync Plex &amp; Tautulli</button>
-  </div>
-</section>
+<div class="page-title">
+  <h1>Library</h1>
+  <button class="btn" id="sync-btn" type="button">Sync with Plex &amp; Tautulli</button>
+</div>
+<p class="subtle">A show needs its dialogue pulled and each episode summarized before recaps can use it.
+  Shows people are watching are indexed automatically, newest episodes first.</p>
 <label class="check"><input type="checkbox" id="watched-only" checked> Only shows someone is watching</label>
 <div class="table-wrap">
   <table class="table" id="show-table">
-    <thead><tr><th>Show</th><th>Dialogue</th><th>Summaries</th><th>Rollups</th><th></th></tr></thead>
+    <thead><tr><th>Show</th><th>Dialogue</th><th>Summaries</th><th class="num">Seasons</th><th></th></tr></thead>
     <tbody></tbody>
   </table>
 </div>
-<p class="muted" id="shows-status"></p>
+<p class="empty" id="shows-status"></p>
 
-<section class="page-head"><h2>Jobs</h2><p class="muted" id="job-counts"></p></section>
+<div class="page-title section-gap">
+  <h2>Queue</h2>
+  <p class="code" id="job-counts"></p>
+</div>
 <div class="table-wrap">
   <table class="table" id="job-table">
-    <thead><tr><th>#</th><th>Type</th><th>Status</th><th>Detail</th><th></th></tr></thead>
+    <thead><tr><th class="num">#</th><th>Job</th><th>State</th><th>Detail</th><th></th></tr></thead>
     <tbody></tbody>
   </table>
 </div>

@@ -62,13 +62,6 @@ def boundary_episode(session: Session, user_id: int, show_id: int) -> Episode | 
     return session.get(Episode, progress.last_watched_episode_id)
 
 
-def next_episode(session: Session, show_id: int, boundary: Episode | None) -> Episode | None:
-    episodes = regular_episodes(session, show_id)
-    if boundary is None:
-        return episodes[0] if episodes else None
-    return next((e for e in episodes if e.order_key > boundary.order_key), None)
-
-
 def shows_in_progress(session: Session, user: User, now: datetime) -> list[dict]:
     rows = session.execute(
         select(WatchProgress, Show)
@@ -79,7 +72,14 @@ def shows_in_progress(session: Session, user: User, now: datetime) -> list[dict]
     out = []
     for progress, show in rows:
         boundary = session.get(Episode, progress.last_watched_episode_id)
-        nxt = next_episode(session, show.id, boundary)
+        episodes = regular_episodes(session, show.id)
+        nxt = next((e for e in episodes if boundary and e.order_key > boundary.order_key), None)
+        seasons: dict[int, dict] = {}
+        for ep in episodes:
+            entry = seasons.setdefault(ep.season, {"season": ep.season, "total": 0, "watched": 0})
+            entry["total"] += 1
+            if boundary is not None and ep.order_key <= boundary.order_key:
+                entry["watched"] += 1
         days = (now - progress.last_watched_at).days if progress.last_watched_at else None
         out.append(
             {
@@ -96,6 +96,9 @@ def shows_in_progress(session: Session, user: User, now: datetime) -> list[dict]
                 if progress.last_watched_at
                 else None,
                 "days_since": days,
+                "watched_count": sum(x["watched"] for x in seasons.values()),
+                "episode_count": len(episodes),
+                "seasons": list(seasons.values()),
             }
         )
     return out
