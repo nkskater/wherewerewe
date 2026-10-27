@@ -217,6 +217,26 @@ def test_history_creates_stub_shows_when_plex_is_missing(mocked, monkeypatch):
         assert session.query(Episode).count() == 4
 
 
+def test_history_survives_a_show_plex_has_no_episodes_for(mocked, monkeypatch):
+    # A deleted show can keep its metadata while /allLeaves returns 404.
+    def handler(request: httpx.Request) -> httpx.Response:
+        if request.url.path == "/library/metadata/100":
+            return httpx.Response(
+                200, json={"MediaContainer": {"Metadata": [{"ratingKey": "100", "title": "Gone"}]}}
+            )
+        return httpx.Response(404)
+
+    monkeypatch.setattr(
+        sync,
+        "plex_client",
+        lambda s: PlexClient(s.plex_url, s.plex_token, transport=httpx.MockTransport(handler)),
+    )
+    with session_scope() as session:
+        assert sync.sync_history(session, load_settings(session))["rows"] == 6
+        assert [s.title for s in session.scalars(select(Show))] == ["Gone"]
+        assert session.query(Episode).count() == 4
+
+
 def test_tautulli_errors_surface():
     client = TautulliClient("http://t", "key", transport=httpx.MockTransport(tautulli_handler))
     with pytest.raises(Exception, match="bad cmd"):

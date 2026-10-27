@@ -12,7 +12,7 @@ from sqlalchemy.orm import Session
 
 from ..config import Settings
 from ..db import get_state, set_state
-from ..integrations.plex import PlexClient
+from ..integrations.plex import PlexClient, PlexError
 from ..integrations.tautulli import TautulliClient
 from ..models import Episode, Show, User, WatchEvent
 from ..sources.subtitles import SUBTITLE_EXTENSIONS
@@ -145,12 +145,16 @@ def _show_for_row(session: Session, row: dict, plex: PlexClient | None) -> Show 
     if plex is not None:
         try:
             ps = plex.show(key)
-            if ps is not None:
-                show = upsert_plex_show(session, ps)
-                sync_show_from_plex(session, plex, show)
-                return show
-        except Exception as exc:  # Plex may no longer have it; fall back to a stub
+        except PlexError as exc:  # Plex may no longer have it; fall back to a stub
             log.info("could not fetch show %s from Plex: %s", key, exc)
+            ps = None
+        if ps is not None:
+            show = upsert_plex_show(session, ps)
+            try:
+                sync_show_from_plex(session, plex, show)
+            except PlexError as exc:  # e.g. a deleted show whose metadata lingers
+                log.info("could not fetch episodes of show %s from Plex: %s", key, exc)
+            return show
     show = Show(plex_rating_key=key, title=row.get("grandparent_title") or f"Show {key}")
     session.add(show)
     session.flush()
