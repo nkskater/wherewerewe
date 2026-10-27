@@ -209,3 +209,8 @@ recaps, `models/` database. Tests are in `backend/tests/`, and the spoiler fixtu
 Not built yet: Jellyfin as a second media server, OCR for image-based subtitles (PGS/VobSub),
 speaker diarization on the Whisper path, a server-side TTS narrated recap (the browser's
 speech synthesis is used for now), and a demo mode with bundled public-domain episodes.
+
+## License
+
+[MIT](LICENSE). The bundled Newsreader and IBM Plex Mono fonts are under the SIL Open Font
+License (`backend/wherewerewe/web/static/fonts/LICENSE.txt`).
