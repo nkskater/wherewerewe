@@ -454,7 +454,39 @@ def list_jobs(
     query = select(Job).order_by(Job.id.desc()).limit(limit)
     if status:
         query = query.where(Job.status == status)
-    return {"counts": counts, "jobs": [job_json(j) for j in session.scalars(query)]}
+    return {
+        "counts": counts,
+        "jobs": [
+            {**job_json(j), "subject": _job_subject(session, j)} for j in session.scalars(query)
+        ],
+    }
+
+
+def _job_subject(session: Session, job: Job) -> str | None:
+    """What a job is about, for people: "The Office S09E21" rather than an episode id."""
+    payload = job.payload or {}
+    if "episode_id" in payload:
+        ep = session.get(Episode, payload["episode_id"])
+        show = session.get(Show, ep.show_id) if ep else None
+        return f"{show.title} {ep.code}" if ep and show else None
+    if "recap_id" in payload:
+        recap = session.get(Recap, payload["recap_id"])
+        show = session.get(Show, recap.show_id) if recap else None
+        return show.title if show else None
+    if "show_id" in payload:
+        show = session.get(Show, payload["show_id"])
+        if show is None:
+            return None
+        return f"{show.title} season {payload['season']}" if "season" in payload else show.title
+    return None
+
+
+@router.post("/jobs/cancel")
+def cancel_jobs(lane: str | None = None, session: Session = Depends(get_session)) -> dict:
+    """Cancel queued jobs, e.g. lane=index to stop pending indexing."""
+    count = queue.cancel_queued(session, lane)
+    session.commit()
+    return {"cancelled": count}
 
 
 @router.post("/jobs/{job_id}/retry")

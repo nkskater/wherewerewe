@@ -52,8 +52,16 @@ def create_app() -> FastAPI:
         methods=["GET"],
         include_in_schema=False,
     )
-    app.add_api_route("/indexing", page("indexing.html"), methods=["GET"], include_in_schema=False)
-    app.add_api_route("/settings", page("settings.html"), methods=["GET"], include_in_schema=False)
+    for name in ("library", "activity", "settings", "system"):
+        app.add_api_route(
+            f"/{name}", page(f"{name}.html"), methods=["GET"], include_in_schema=False
+        )
+    app.add_api_route(
+        "/indexing",
+        lambda: RedirectResponse("/library"),
+        methods=["GET"],
+        include_in_schema=False,
+    )
     app.add_api_route(
         "/favicon.ico",
         lambda: RedirectResponse("/static/icon.svg"),

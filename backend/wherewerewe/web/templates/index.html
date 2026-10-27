@@ -1,33 +1,43 @@
 {% extends "base.html" %}
 {% block page %}home{% endblock %}
-{% block content %}
-<div class="page-title">
-  <h1>Up next</h1>
-  <div class="tabs" id="length-seg" role="radiogroup" aria-label="Recap length">
-    <span class="tabs-label">Recap</span>
-    <button data-length="quick" role="radio">Quick</button>
-    <button data-length="standard" role="radio">Standard</button>
-    <button data-length="deep" role="radio">Deep</button>
+{% block toolbar %}
+<div class="tb-group">
+  <button class="tb-btn" id="sync-btn" type="button"><svg class="icon"><use href="#i-refresh"/></svg><span>Sync</span></button>
+</div>
+<div class="tb-group tb-right">
+  <div class="tb-menu" data-menu="length">
+    <button class="tb-btn" type="button"><svg class="icon"><use href="#i-text"/></svg><span>Recap length</span></button>
+    <ul class="menu" hidden>
+      <li><button data-value="quick">Quick</button></li>
+      <li><button data-value="standard">Standard</button></li>
+      <li><button data-value="deep">Deep</button></li>
+    </ul>
+  </div>
+  <div class="tb-menu" data-menu="view">
+    <button class="tb-btn" type="button"><svg class="icon"><use href="#i-grid"/></svg><span>View</span></button>
+    <ul class="menu" hidden>
+      <li><button data-value="posters">Posters</button></li>
+      <li><button data-value="table">Table</button></li>
+    </ul>
+  </div>
+  <div class="tb-menu" data-menu="sort">
+    <button class="tb-btn" type="button"><svg class="icon"><use href="#i-sort"/></svg><span>Sort</span></button>
+    <ul class="menu" hidden>
+      <li><button data-value="recent">Last watched</button></li>
+      <li><button data-value="away">Days away</button></li>
+      <li><button data-value="title">Title</button></li>
+    </ul>
   </div>
 </div>
+{% endblock %}
+{% block content %}
 <p class="empty" id="home-status">Loading…</p>
-<ol class="queue" id="show-grid"></ol>
-<template id="show-card">
-  <li class="queue-row">
-    <div class="poster"><img alt="" loading="lazy"><span class="poster-letter"></span></div>
-    <div class="queue-main">
-      <h2 class="queue-title"></h2>
-      <p class="queue-pos"><span class="code from"></span><span class="arrow" aria-hidden="true">→</span><span class="code to"></span><span class="next-title"></span></p>
-      <div class="rail" aria-hidden="true"></div>
-      <p class="queue-count"></p>
-    </div>
-    <div class="queue-side">
-      <p class="away"><span class="away-n"></span><span class="away-unit"></span></p>
-      <div class="queue-actions">
-        <button class="btn btn-primary recap-btn" type="button">Recap</button>
-        <a class="link chars-link">Characters</a>
-      </div>
-    </div>
-  </li>
-</template>
+<div class="posters" id="show-posters" hidden></div>
+<table class="table" id="show-table" hidden>
+  <thead><tr>
+    <th class="col-status"></th><th>Show</th><th>Last watched</th><th>Up next</th>
+    <th class="num">Away</th><th class="col-progress">Episodes</th><th class="col-actions"></th>
+  </tr></thead>
+  <tbody></tbody>
+</table>
 {% endblock %}

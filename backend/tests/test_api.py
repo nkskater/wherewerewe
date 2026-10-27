@@ -66,7 +66,15 @@ def world(tmp_path, fake_llm):
 
 
 def test_pages_render(client, world):
-    for path in ["/", "/indexing", "/settings", f"/shows/{world['show']}/characters", "/recaps/1"]:
+    for path in [
+        "/",
+        "/library",
+        "/activity",
+        "/settings",
+        "/system",
+        f"/shows/{world['show']}/characters",
+        "/recaps/1",
+    ]:
         resp = client.get(path)
         assert resp.status_code == 200, path
         assert "Where Were We" in resp.text
@@ -215,6 +223,7 @@ def test_webhook_gap_triggers_recap_and_notification(client, world, monkeypatch)
 
 
 def test_webhook_rewatch_recaps_only_what_came_before(client, world):
+    client.put(f"/api/users/{world['user']}", json={"notify_target": "https://ntfy.sh/tv"})
     result = _play(client, rating_key="502")  # replaying S01E02
     with session_scope() as session:
         recap = session.get(Recap, result["recap_id"])
@@ -222,7 +231,10 @@ def test_webhook_rewatch_recaps_only_what_came_before(client, world):
 
 
 def test_webhook_without_gap_or_unknown(client, world):
-    client.put(f"/api/users/{world['user']}", json={"gap_threshold_days": 60})
+    client.put(
+        f"/api/users/{world['user']}",
+        json={"gap_threshold_days": 60, "notify_target": "https://ntfy.sh/tv"},
+    )
     assert _play(client)["result"] == "no_gap"
     assert _play(client, user_id="999")["result"] == "unknown"
     assert _play(client, action="pause")["result"] == "ignored"
@@ -233,6 +245,24 @@ def test_webhook_without_gap_or_unknown(client, world):
         assert job.type == "sync_history" and job.payload == {"plex_user_id": "7"}
     movie = client.post("/webhooks/tautulli", json={"action": "play", "media_type": "movie"})
     assert movie.json()["result"] == "ignored"
+
+
+def test_webhook_uses_no_gpu_unless_asked(client, world):
+    """Without auto-index or a notification target, playback queues no model work."""
+    assert _play(client)["result"] == "no_target"
+    with session_scope() as session:
+        types = {j.type for j in session.query(Job)}
+        assert "index_show" not in types and "generate_recap" not in types
+    client.put("/api/settings", json={"auto_index": True})
+    _play(client)
+    with session_scope() as session:
+        assert session.query(Job).filter(Job.type == "index_show").count() == 1
+
+
+def test_cancel_queued_jobs(client, world):
+    client.post(f"/api/shows/{world['show']}/index", json={"scope": "all"})
+    assert client.post("/api/jobs/cancel?lane=index").json() == {"cancelled": 1}
+    assert client.get("/api/jobs?status=queued").json()["jobs"] == []
 
 
 def test_webhook_secret(client, world, monkeypatch):

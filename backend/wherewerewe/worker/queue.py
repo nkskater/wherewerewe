@@ -108,6 +108,16 @@ def fail(session: Session, job: Job, error: str, *, retry: bool = True) -> None:
         job.status = "failed"
 
 
+def cancel_queued(session: Session, lane: str | None = None) -> int:
+    """Cancel jobs that haven't started. Running jobs finish."""
+    query = update(Job).where(Job.status == "queued")
+    if lane:
+        query = query.where(Job.queue == lane)
+    count = session.execute(query.values(status="cancelled", finished_at=_now())).rowcount
+    session.flush()
+    return count
+
+
 def reset_stale(session: Session) -> int:
     """Requeue jobs left 'running' by a worker that died."""
     result = session.execute(
@@ -121,6 +131,7 @@ def prune(session: Session, keep_days: int = 14) -> None:
 
     session.execute(
         delete(Job).where(
-            Job.status == "done", Job.finished_at < _now() - timedelta(days=keep_days)
+            Job.status.in_(("done", "cancelled")),
+            Job.finished_at < _now() - timedelta(days=keep_days),
         )
     )

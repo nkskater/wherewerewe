@@ -1,31 +1,34 @@
 {% extends "base.html" %}
 {% block title %}Recap · Where Were We{% endblock %}
 {% block page %}recap{% endblock %}
+{% block toolbar %}
+<div class="tb-group" id="recap-length">
+  <button class="tb-btn" type="button" data-length="quick"><svg class="icon"><use href="#i-text"/></svg><span>Quick</span></button>
+  <button class="tb-btn" type="button" data-length="standard"><svg class="icon"><use href="#i-text"/></svg><span>Standard</span></button>
+  <button class="tb-btn" type="button" data-length="deep"><svg class="icon"><use href="#i-text"/></svg><span>Deep</span></button>
+  <span class="tb-sep"></span>
+  <button class="tb-btn" type="button" id="listen-btn" hidden><svg class="icon"><use href="#i-volume"/></svg><span>Read aloud</span></button>
+  <a class="tb-btn" id="chars-btn"><svg class="icon"><use href="#i-users"/></svg><span>Characters</span></a>
+</div>
+{% endblock %}
 {% block content %}
 <article class="recap" data-recap-id="{{ recap_id }}">
-  <header class="recap-head">
-    <p class="kicker">Previously on</p>
-    <h1 id="recap-show">&nbsp;</h1>
-    <p class="recap-through" id="recap-boundary"></p>
+  <header class="details">
+    <div class="details-poster"><img alt="" id="recap-poster" hidden></div>
+    <div class="details-body">
+      <h1 class="details-title" id="recap-show">&nbsp;</h1>
+      <div class="labels" id="recap-labels"></div>
+      <p class="status" id="recap-status"><span class="spinner"></span><span class="status-text">Waiting…</span></p>
+    </div>
   </header>
-  <div class="recap-bar">
-    <div class="tabs" id="recap-length" role="radiogroup" aria-label="Recap length">
-      <button data-length="quick" role="radio">Quick</button>
-      <button data-length="standard" role="radio">Standard</button>
-      <button data-length="deep" role="radio">Deep</button>
-    </div>
-    <div class="recap-links">
-      <button class="link" id="listen-btn" type="button" hidden>Read aloud</button>
-      <a class="link" id="chars-btn">Characters</a>
-    </div>
+  <div class="panel recap-panel">
+    <div class="recap-text" id="recap-text" aria-live="polite"></div>
+    <p class="alert alert-error" id="recap-error" hidden></p>
   </div>
-  <p class="status" id="recap-status"><span class="status-dot"></span><span class="status-text">Waiting…</span></p>
-  <div class="recap-text" id="recap-text" aria-live="polite"></div>
-  <aside class="note note-warn" id="recap-coverage" hidden></aside>
-  <details class="footnote" id="recap-verification" hidden>
+  <p class="alert alert-warning" id="recap-coverage" hidden></p>
+  <details class="panel checks" id="recap-verification" hidden>
     <summary></summary>
     <ol></ol>
   </details>
-  <p class="note note-error" id="recap-error" hidden></p>
 </article>
 {% endblock %}

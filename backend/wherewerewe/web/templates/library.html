@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+{% block title %}Library · Where Were We{% endblock %}
+{% block page %}library{% endblock %}
+{% block toolbar %}
+<div class="tb-group">
+  <button class="tb-btn" id="sync-btn" type="button"><svg class="icon"><use href="#i-refresh"/></svg><span>Sync</span></button>
+</div>
+<div class="tb-group tb-right">
+  <div class="tb-menu" data-menu="filter">
+    <button class="tb-btn" type="button"><svg class="icon"><use href="#i-filter"/></svg><span>Filter</span></button>
+    <ul class="menu" hidden>
+      <li><button data-value="watched">Being watched</button></li>
+      <li><button data-value="all">All shows</button></li>
+    </ul>
+  </div>
+</div>
+{% endblock %}
+{% block content %}
+<p class="hint">Recaps need each episode's dialogue pulled and summarized first. Nothing runs on its own:
+  press <b>Index</b> on a show to queue it, and watch progress under <a href="/activity">Activity</a>.</p>
+<table class="table" id="show-table">
+  <thead><tr>
+    <th>Show</th><th class="col-progress">Dialogue</th><th class="col-progress">Summaries</th>
+    <th class="num">Season summaries</th><th class="col-actions"></th>
+  </tr></thead>
+  <tbody></tbody>
+</table>
+<p class="empty" id="shows-status"></p>
+{% endblock %}

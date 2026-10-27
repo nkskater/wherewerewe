@@ -9,6 +9,7 @@ from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from ..config import Settings
+from ..integrations import notifiers
 from ..models import Episode, Recap, Show, User, WatchProgress
 from ..worker import queue
 from .library import regular_episodes
@@ -81,10 +82,15 @@ def handle_webhook(session: Session, payload: dict, settings: Settings) -> dict:
         queue.enqueue(session, "sync_history", {}, dedupe_key="sync_history:")
         return {"result": "unknown", "reason": "user or show not synced yet"}
 
-    # Someone started watching: make sure the show is indexed (cheap if already done).
-    queue.enqueue(
-        session, "index_show", {"show_id": show.id}, priority=5, dedupe_key=f"index_show:{show.id}"
-    )
+    if settings.auto_index:
+        # Someone started watching: make sure the show is indexed (cheap if already done).
+        queue.enqueue(
+            session,
+            "index_show",
+            {"show_id": show.id},
+            priority=5,
+            dedupe_key=f"index_show:{show.id}",
+        )
 
     progress = session.scalar(
         select(WatchProgress).where(
@@ -97,6 +103,9 @@ def handle_webhook(session: Session, payload: dict, settings: Settings) -> dict:
         or progress.last_watched_episode_id is None
     ):
         return {"result": "no_history", "reason": "first time watching this show"}
+
+    if not user.notifications_enabled or not notifiers.targets_for(user.notify_target, settings):
+        return {"result": "no_target", "reason": "nowhere to send a recap"}
 
     threshold = user.gap_threshold_days or settings.default_gap_days
     gap = _now() - progress.last_watched_at

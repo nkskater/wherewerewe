@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+{% block title %}Activity · Where Were We{% endblock %}
+{% block page %}activity{% endblock %}
+{% block toolbar %}
+<div class="tb-group">
+  <button class="tb-btn" id="refresh-btn" type="button"><svg class="icon"><use href="#i-refresh"/></svg><span>Refresh</span></button>
+  <button class="tb-btn" id="clear-btn" type="button"><svg class="icon"><use href="#i-x"/></svg><span>Clear queue</span></button>
+</div>
+<div class="tb-group tb-right"><span class="tb-text" id="job-counts"></span></div>
+{% endblock %}
+{% block content %}
+<table class="table" id="job-table">
+  <thead><tr>
+    <th class="col-status"></th><th>Job</th><th>Detail</th><th>Queued</th><th class="num">Took</th><th class="col-actions"></th>
+  </tr></thead>
+  <tbody></tbody>
+</table>
+<p class="empty" id="jobs-status"></p>
+{% endblock %}

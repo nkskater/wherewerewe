@@ -1,29 +1,29 @@
 {% extends "base.html" %}
 {% block title %}Characters · Where Were We{% endblock %}
 {% block page %}characters{% endblock %}
-{% block content %}
-<div class="page-title" data-show-id="{{ show_id }}">
-  <div>
-    <p class="kicker" id="chars-show">&nbsp;</p>
-    <h1>Who's who</h1>
-    <p class="subtle" id="chars-asof"></p>
-  </div>
+{% block toolbar %}
+<div class="tb-group">
+  <a class="tb-btn" id="back-btn" href="/"><svg class="icon"><use href="#i-play"/></svg><span>Watching</span></a>
 </div>
-<input type="search" id="chars-search" class="search" placeholder="Find a character" autocomplete="off">
-<p class="empty" id="chars-status">Loading…</p>
-<ul class="people" id="char-list"></ul>
-<template id="char-card">
-  <li class="person">
-    <div class="person-head">
-      <h2 class="person-name"></h2>
-      <span class="code person-seen"></span>
+<div class="tb-group tb-right">
+  <label class="tb-filter"><svg class="icon"><use href="#i-search"/></svg>
+    <input type="search" id="chars-search" placeholder="Filter characters" autocomplete="off"></label>
+</div>
+{% endblock %}
+{% block content %}
+<div data-show-id="{{ show_id }}" id="chars-root">
+  <header class="details">
+    <div class="details-poster"><img alt="" id="chars-poster" hidden></div>
+    <div class="details-body">
+      <h1 class="details-title" id="chars-show">&nbsp;</h1>
+      <div class="labels" id="chars-labels"></div>
+      <p class="muted">Only what you've seen: no later episodes, and no names you haven't learned yet.</p>
     </div>
-    <p class="person-aka"></p>
-    <p class="person-role"></p>
-    <p class="person-status"></p>
-    <details class="person-history"><summary>Episode notes</summary><ol></ol></details>
-    <button class="link ask-btn" type="button">Remind me who this is</button>
-    <p class="person-answer" hidden></p>
-  </li>
-</template>
+  </header>
+  <table class="table" id="char-table">
+    <thead><tr><th>Character</th><th>Who they are</th><th>Status</th><th>Seen</th><th class="col-actions"></th></tr></thead>
+    <tbody></tbody>
+  </table>
+  <p class="empty" id="chars-status">Loading…</p>
+</div>
 {% endblock %}

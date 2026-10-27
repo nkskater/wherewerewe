@@ -71,6 +71,9 @@ class Settings(BaseSettings):
     # Scheduling
     sync_interval_minutes: int = 15
     library_scan_interval_minutes: int = 360
+    # Off: the GPU only runs when someone asks (Index, Recap). On: index a show when anyone
+    # starts watching it, and catch up overnight at backfill_hour.
+    auto_index: bool = False
     backfill_hour: int = 3  # local hour for the nightly backfill; -1 disables it
     worker_poll_seconds: float = 1.0
 
@@ -136,7 +139,12 @@ RUNTIME_KEYS: dict[str, list[str]] = {
         "recap_cache_hours",
     ],
     "Notifications": ["ntfy_url", "ntfy_token", "discord_webhook_url"],
-    "Schedule": ["sync_interval_minutes", "library_scan_interval_minutes", "backfill_hour"],
+    "Schedule": [
+        "sync_interval_minutes",
+        "library_scan_interval_minutes",
+        "auto_index",
+        "backfill_hour",
+    ],
 }
 SECRET_KEYS = {
     "plex_token",

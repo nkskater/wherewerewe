@@ -13,13 +13,14 @@ Everything runs on your own hardware. No dialogue, watch history, or summaries l
 
 - **Per-viewer spoiler boundary**: the furthest episode each Plex user has finished (90% by
   default), in the show's order. Specials, rewatches and half-watched episodes never move it.
-- **Continue Watching** page with a one-tap recap in three lengths: quick, standard, or deep
-  (season by season). The recap streams in as it's written. It also has a browser
-  text-to-speech **Listen** button.
+- **Watching** page (posters or a table) with a one-tap recap in three lengths: quick,
+  standard, or deep (season by season). The recap streams in as it's written, and the browser
+  can read it aloud.
 - **"Who is this again?"**: a searchable cast list as of your position, and a short answer
   built only from what you've seen.
 - **Returning-after-a-gap pushes**: a Tautulli playback-start webhook checks how long it's
-  been. If it's past your threshold (default 10 days), a quick recap goes to ntfy or Discord.
+  been. If it's past your threshold (default 10 days) and the viewer has an ntfy or Discord
+  target, a quick recap is written and pushed there.
 - **Verification pass**: every recap sentence is checked against the source summaries, and
   unsupported claims are removed before you see them.
 - **Spoiler eval suite**: known shows with a cutoff and a list of later events that must
@@ -100,8 +101,9 @@ services:
       - /mnt/user/media:/data/media:ro
 ```
 
-Then open `http://<host>:8765`, check the status panel on **Settings**, and run a sync from
-**Indexing**. An Unraid Community Apps template is in [`unraid/`](unraid/wherewerewe.xml).
+Then open `http://<host>:8765`, check **System** for connection status, press **Sync** on
+**Watching**, and index the shows you want recaps for from **Library**. Nothing runs on the GPU
+until you ask (set `AUTO_INDEX=true` to index shows when someone starts watching them, and overnight). An Unraid Community Apps template is in [`unraid/`](unraid/wherewerewe.xml).
 
 Two tags are published. `latest` includes the Whisper fallback and its CUDA libraries
 (about 5 GB). `latest-lite` leaves Whisper out (about 300 MB compressed); with it, episodes
@@ -134,6 +136,7 @@ Values saved there override the environment.
 | `DEFAULT_GAP_DAYS` | `10` | Days away before a recap is pushed (per-viewer override) |
 | `PUBLIC_URL` | `http://localhost:8765` | Used for links in notifications |
 | `WEBHOOK_SECRET` | | If set, the webhook needs `?token=<secret>` |
+| `AUTO_INDEX` | `false` | Index a show when someone starts it, and nightly at `BACKFILL_HOUR` (default 3) |
 | `SUBTITLE_LANGUAGES` | `en,eng` | Preferred subtitle languages, in order |
 | `CONFIG_DIR`, `DATABASE_URL` | `/config`, SQLite | `postgresql+psycopg://...` for Postgres |
 
@@ -212,5 +215,4 @@ speech synthesis is used for now), and a demo mode with bundled public-domain ep
 
 ## License
 
-[MIT](LICENSE). The bundled Newsreader and IBM Plex Mono fonts are under the SIL Open Font
-License (`backend/wherewerewe/web/static/fonts/LICENSE.txt`).
+[MIT](LICENSE).

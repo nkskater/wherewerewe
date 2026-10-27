@@ -293,15 +293,23 @@ def ledger_as_of(session: Session, show_id: int, boundary: tuple[int, int]) -> l
                 first_seen=states[0][1].code,
                 last_seen=states[-1][1].code,
                 appearances=len(states),
-                history=[
-                    {"episode": ep.code, "new_info": s.new_info, "status": s.status}
-                    for s, ep in states
-                    if s.new_info or s.status
-                ],
+                history=_history(states),
             )
         )
     entries.sort(key=lambda e: (-e.appearances, e.name.lower()))
     return entries
+
+
+def _history(states: list[tuple[CharacterState, Episode]]) -> list[dict]:
+    """Per-episode notes; a status only shows where it changed ("dead" after "alive")."""
+    out, previous = [], None
+    for state, ep in states:
+        changed = state.status if state.status and state.status != previous else None
+        if state.status:
+            previous = state.status
+        if state.new_info or (changed and out):  # the first status is the starting point
+            out.append({"episode": ep.code, "new_info": state.new_info, "status": changed})
+    return out
 
 
 def ledger_notes(entry: LedgerEntry) -> str:

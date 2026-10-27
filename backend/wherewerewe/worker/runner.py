@@ -112,7 +112,11 @@ class Worker:
             ):
                 queue.enqueue(session, "sync_history", {}, dedupe_key="sync_history:")
             local = datetime.now()
-            if settings.backfill_hour >= 0 and local.hour == settings.backfill_hour:
+            if (
+                settings.auto_index
+                and settings.backfill_hour >= 0
+                and local.hour == settings.backfill_hour
+            ):
                 today = local.date().isoformat()
                 if get_state(session, "sched_backfill") != today:
                     set_state(session, "sched_backfill", today)

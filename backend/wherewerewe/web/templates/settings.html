@@ -1,40 +1,42 @@
 {% extends "base.html" %}
 {% block title %}Settings · Where Were We{% endblock %}
 {% block page %}settings{% endblock %}
+{% block toolbar %}
+<div class="tb-group">
+  <button class="tb-btn" type="submit" form="settings-form"><svg class="icon"><use href="#i-save"/></svg><span>Save changes</span></button>
+</div>
+<div class="tb-group tb-right"><span class="tb-text" id="settings-msg"></span></div>
+{% endblock %}
 {% block content %}
-<div class="page-title"><h1>Settings</h1></div>
-
-<section class="panel">
-  <h2>Connections</h2>
-  <ul class="checks" id="health"><li class="subtle">Checking…</li></ul>
-</section>
-
-<form id="settings-form" class="panel">
-  <div id="settings-groups"></div>
-  <div class="form-foot">
-    <button class="btn btn-primary" type="submit">Save</button>
-    <span id="settings-msg" class="subtle"></span>
-  </div>
-  <p class="fineprint">Saved values override environment variables. Clear a field and save to fall back
-    to the environment. Secrets are shown as ••••••••; leave them alone to keep them.</p>
+<form id="settings-form">
+  <div id="settings-groups"><p class="muted">Loading…</p></div>
+  <p class="hint">Saved values override environment variables. Clear a field and save to fall back to the
+    environment. Secrets show as ••••••••; leave them alone to keep them.</p>
 </form>
 
-<section class="panel">
-  <h2>Viewers</h2>
-  <p class="subtle">Viewers come from Tautulli. Pushes go to a ntfy topic URL
-    (https://ntfy.sh/your-topic) or a Discord webhook URL; leave it blank to use the defaults above.</p>
-  <div id="user-settings"><p class="subtle">Loading…</p></div>
-</section>
+<fieldset class="form-section" id="viewers">
+  <legend>Viewers</legend>
+  <p class="hint">Viewers come from Tautulli. When someone comes back to a show after the set number of days,
+    a short recap is pushed to their ntfy topic (https://ntfy.sh/your-topic) or Discord webhook. With no target
+    here or under Notifications, no recap is generated.</p>
+  <table class="table" id="user-table">
+    <thead><tr><th>Viewer</th><th>Push to</th><th class="num">After days away</th><th>Push</th><th class="col-actions"></th></tr></thead>
+    <tbody><tr><td colspan="5" class="muted">Loading…</td></tr></tbody>
+  </table>
+</fieldset>
 
-<section class="panel">
-  <h2>Tautulli webhook</h2>
-  <ol class="steps">
-    <li>In Tautulli, open <b>Settings → Notification Agents → Add a new notification agent → Webhook</b>.</li>
-    <li>Webhook URL <code id="webhook-url"></code>, method <b>POST</b>.</li>
-    <li>Triggers: <b>Playback Start</b>, <b>Playback Stop</b>, <b>Watched</b>.</li>
-    <li>Data: paste this as the JSON body for all three.</li>
-  </ol>
-  <pre class="codeblock">{
+<fieldset class="form-section" id="connect">
+  <legend>Connect</legend>
+  <p class="hint">In Tautulli, open <b>Settings → Notification Agents → Add a new notification agent → Webhook</b>.
+    Use the URL below with method <b>POST</b>, turn on the <b>Playback Start</b>, <b>Playback Stop</b> and
+    <b>Watched</b> triggers, and paste the JSON as the data for all three.</p>
+  <div class="form-row">
+    <label class="form-label">Webhook URL</label>
+    <div class="form-input"><code class="copy" id="webhook-url"></code></div>
+  </div>
+  <div class="form-row">
+    <label class="form-label">JSON data</label>
+    <div class="form-input"><pre class="codeblock">{
   "action": "{action}",
   "media_type": "{media_type}",
   "user_id": "{user_id}",
@@ -43,6 +45,7 @@
   "grandparent_rating_key": "{grandparent_rating_key}",
   "season_num": "{season_num}",
   "episode_num": "{episode_num}"
-}</pre>
-</section>
+}</pre></div>
+  </div>
+</fieldset>
 {% endblock %}
