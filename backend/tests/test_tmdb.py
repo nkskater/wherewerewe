@@ -116,7 +116,9 @@ def test_synopsis_mode_needs_no_model(tmp_path, monkeypatch):
         people = {e.name: e for e in ledger_as_of(session, show_id, (1, 3))}
         # Hank is credited all season but not mentioned until S02E02.
         assert set(people) == {"Walter White", "Jesse Pinkman", "Krazy-8"}
-        assert people["Krazy-8"].role == "Played by Guest Actor"
+        # Notes come from what the synopsis says about them; the actor is shown separately.
+        assert people["Krazy-8"].role is None
+        assert people["Krazy-8"].history[0]["new_info"] == "Walt makes a hard choice about Krazy-8."
         assert "Hank Schrader" in {e.name for e in ledger_as_of(session, show_id, (2, 2))}
     # Each episode is fetched from TMDB once, even when re-indexed.
     with session_scope() as session:
@@ -190,3 +192,22 @@ def test_characters_show_who_plays_them_up_to_the_boundary(tmp_path, monkeypatch
         actors = indexing.actors_as_of(session, show_id, (1, 3))
         assert indexing.played_by(people["Walter White"], actors) == "Actor One"
         assert indexing.played_by(people["Krazy-8"], actors) == "Guest Actor"
+
+
+def test_synopsis_summaries_are_refreshed_in_place(tmp_path, monkeypatch):
+    monkeypatch.setenv("SUMMARY_SOURCE", "synopsis")
+    monkeypatch.setenv("TMDB_API_KEY", "k" * 32)
+    monkeypatch.setattr(indexing, "TMDBClient", FakeTMDB)
+    with session_scope() as session:
+        show_id = import_folder(session, make_show(tmp_path), "The Show")["show_id"]
+        settings = load_settings(session)
+        for ep in regular_episodes(session, show_id):
+            index_episode(session, settings, ep.id)
+        for row in session.scalars(select(EpisodeSummary)):
+            row.summary_json = {**row.summary_json, "characters": []}  # an older format
+    FETCHED.clear()
+    with session_scope() as session:
+        assert indexing.refresh_synopsis_summaries(session) == 5
+        indexing.rebuild_ledgers(session, load_settings(session))
+        assert "Walter White" in {e.name for e in ledger_as_of(session, show_id, (1, 1))}
+    assert FETCHED == []  # nothing fetched again

@@ -14,7 +14,7 @@ from datetime import UTC, datetime, timedelta
 from sqlalchemy import select, update
 from sqlalchemy.orm import Session
 
-from ..models import Job
+from ..models import Job, Recap
 
 LANES: dict[str, str] = {
     "generate_recap": "interactive",
@@ -110,12 +110,18 @@ def fail(session: Session, job: Job, error: str, *, retry: bool = True) -> None:
 
 def cancel_queued(session: Session, lane: str | None = None) -> int:
     """Cancel jobs that haven't started. Running jobs finish."""
-    query = update(Job).where(Job.status == "queued")
+    query = select(Job).where(Job.status == "queued")
     if lane:
         query = query.where(Job.queue == lane)
-    count = session.execute(query.values(status="cancelled", finished_at=_now())).rowcount
+    jobs = list(session.scalars(query))
+    for job in jobs:
+        job.status, job.finished_at = "cancelled", _now()
+        if job.type == "generate_recap":
+            recap = session.get(Recap, job.payload.get("recap_id"))
+            if recap is not None and recap.status == "queued":
+                recap.status, recap.error = "failed", "Cancelled before it started."
     session.flush()
-    return count
+    return len(jobs)
 
 
 def reset_stale(session: Session) -> int:

@@ -29,16 +29,16 @@ def credited_in(cast: list[dict], text: str) -> list[dict]:
     TMDB lists a season's regulars on every episode, including ones introduced later, so a
     regular only counts once the episode itself mentions them.
     """
+    return [p for p in cast if p["guest"] or mentions(text, p["character"])]
+
+
+def mentions(text: str, character: str) -> bool:
+    """Whether `text` names this character by first or last name."""
     tokens = set(re.findall(r"[a-z][a-z'-]+", text.lower()))
-    out = []
-    for person in cast:
-        names = re.split(r"\s*/\s*", person["character"])
-        words = {w.lower() for n in names for w in (n.split()[:1] + n.split()[-1:]) if len(w) > 2}
-        # "Walt" in the dialogue counts for "Walter White".
-        mentioned = any(t == w or (len(t) >= 4 and w.startswith(t)) for w in words for t in tokens)
-        if person["guest"] or mentioned:
-            out.append(person)
-    return out
+    names = re.split(r"\s*/\s*", character)
+    words = {w.lower() for n in names for w in (n.split()[:1] + n.split()[-1:]) if len(w) > 2}
+    # "Walt" in the dialogue counts for "Walter White".
+    return any(t == w or (len(t) >= 4 and w.startswith(t)) for w in words for t in tokens)
 
 
 class TMDBClient:

@@ -11,7 +11,11 @@ from datetime import UTC, datetime, timedelta
 from ..db import create_all, get_state, load_settings, session_scope, set_state
 from ..llm.ledger import LEDGER_VERSION
 from ..models import Job
-from ..services.indexing import rebuild_ledgers
+from ..services.indexing import (
+    SYNOPSIS_FORMAT,
+    rebuild_ledgers,
+    refresh_synopsis_summaries,
+)
 from . import queue
 from .jobs import HANDLERS, PermanentError
 
@@ -138,7 +142,13 @@ class Worker:
             reset = queue.reset_stale(session)
             if reset:
                 log.info("requeued %s jobs left running by a previous worker", reset)
-            if get_state(session, "ledger_version") != LEDGER_VERSION:
+            stale = get_state(session, "ledger_version") != LEDGER_VERSION
+            if get_state(session, "synopsis_format") != SYNOPSIS_FORMAT:
+                count = refresh_synopsis_summaries(session)
+                set_state(session, "synopsis_format", SYNOPSIS_FORMAT)
+                log.info("refreshed %s synopsis summaries", count)
+                stale = stale or count > 0
+            if stale:
                 shows = rebuild_ledgers(session, load_settings(session))
                 set_state(session, "ledger_version", LEDGER_VERSION)
                 log.info("rebuilt character ledgers for %s shows", shows)

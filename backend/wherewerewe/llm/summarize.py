@@ -10,6 +10,7 @@ from __future__ import annotations
 import logging
 import re
 
+from ..sources.tmdb import mentions
 from . import prompts
 from .client import LLM, chat_json, estimate_tokens
 
@@ -39,13 +40,15 @@ def synopsis_summary(code: str, overview: str, cast: list[dict]) -> dict:
     characters = []
     for person in cast:
         name, *aliases = [n.strip() for n in person["character"].split("/") if n.strip()]
+        # The actor is shown separately; the notes are what the synopsis says about them.
+        notes = [s for s in sentences if mentions(s, person["character"])]
         characters.append(
             {
                 "name": name,
                 "aliases": aliases,
-                "role": f"Played by {person['actor']}" if person.get("actor") else "",
+                "role": "",
                 "status": "",
-                "new_info": "",
+                "new_info": " ".join(notes),
                 "relationships": [],
             }
         )

@@ -97,6 +97,9 @@ def create_recap(
             .limit(1)
         )
         if cached is not None:
+            if cached.status == "queued" and enqueue:
+                # Its job may have been cancelled or lost; this is a no-op if it's still there.
+                _enqueue(session, cached)
             return cached
     recap = Recap(
         user_id=user_id,
@@ -109,14 +112,18 @@ def create_recap(
     session.add(recap)
     session.flush()
     if enqueue:
-        queue.enqueue(
-            session,
-            "generate_recap",
-            {"recap_id": recap.id},
-            priority=50,
-            dedupe_key=f"generate_recap:{recap.id}",
-        )
+        _enqueue(session, recap)
     return recap
+
+
+def _enqueue(session: Session, recap: Recap) -> None:
+    queue.enqueue(
+        session,
+        "generate_recap",
+        {"recap_id": recap.id},
+        priority=50,
+        dedupe_key=f"generate_recap:{recap.id}",
+    )
 
 
 def _set(recap_id: int, **values) -> None:

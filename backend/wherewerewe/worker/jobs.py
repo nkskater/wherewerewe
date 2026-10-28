@@ -33,6 +33,8 @@ def _sync_history(session: Session, settings: Settings, job: Job) -> str:
         full=bool(job.payload.get("full")),
         plex_user_id=job.payload.get("plex_user_id"),
     )
+    if not settings.auto_index:
+        return f"{result['rows']} history rows, {len(result['affected'])} user/show pairs updated"
     active = set(indexing.active_show_ids(session, indexing.AUTO_INDEX_ACTIVE_DAYS))
     for show_id in {show_id for _, show_id in result["affected"]} & active:
         queue.enqueue(

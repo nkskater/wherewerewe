@@ -36,6 +36,7 @@ BACKFILL_ACTIVE_DAYS = 365
 
 
 SYNOPSIS_MODEL = "synopsis"  # EpisodeSummary.model for summaries built without a model
+SYNOPSIS_FORMAT = "synopsis-2"  # bump when synopsis_summary changes; they're rebuilt on start
 
 
 def summary_model(settings: Settings) -> str:
@@ -249,6 +250,24 @@ def index_episode(
     update_ledger(session, ep, summary)
     maybe_enqueue_rollup(session, ep.show_id, ep.season, settings.llm_model)
     return f"{label}: summarized from {detail}"
+
+
+def refresh_synopsis_summaries(session: Session) -> int:
+    """Rebuild synopsis summaries from the stored synopses and cast. Returns how many."""
+    rows = list(
+        session.scalars(select(EpisodeSummary).where(EpisodeSummary.model == SYNOPSIS_MODEL))
+    )
+    for row in rows:
+        ep = session.get(Episode, row.episode_id)
+        if ep is None:
+            continue
+        members = group_members(session, ep)
+        overview = "\n\n".join(m.overview for m in members if m.overview)
+        if overview:
+            cast = _cast(session, members, overview)
+            row.summary_json = synopsis_summary(group_label(members), overview, cast)
+    session.flush()
+    return len(rows)
 
 
 def rebuild_ledgers(session: Session, settings: Settings) -> int:

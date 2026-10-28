@@ -285,3 +285,42 @@ def test_jobs_and_index_endpoints(client, world):
         failed_id = job.id
     assert client.post(f"/api/jobs/{failed_id}/retry").json()["status"] == "queued"
     assert client.post(f"/api/jobs/{job_id}/retry").status_code == 409
+
+
+def test_cancelling_a_recap_fails_it_and_asking_again_revives_a_stuck_one(client, world):
+    body = {"show_id": world["show"], "user_id": world["user"], "length": "quick"}
+    first = client.post("/api/recaps", json=body).json()
+    client.post("/api/jobs/cancel")
+    assert client.get(f"/api/recaps/{first['id']}").json()["status"] == "failed"
+
+    # A recap left queued with no job (cancelled by an older version) gets one again.
+    second = client.post("/api/recaps", json=body).json()
+    with session_scope() as session:
+        for job in session.scalars(select(Job).where(Job.type == "generate_recap")):
+            job.status = "cancelled"
+    again = client.post("/api/recaps", json=body).json()
+    assert again["id"] == second["id"]
+    with session_scope() as session:
+        live = session.scalars(
+            select(Job).where(Job.type == "generate_recap", Job.status == "queued")
+        ).all()
+        assert [j.payload["recap_id"] for j in live] == [second["id"]]
+
+
+def test_history_sync_only_queues_indexing_with_auto_index(world, monkeypatch):
+    from wherewerewe.worker import jobs
+
+    monkeypatch.setattr(
+        jobs.sync, "sync_history", lambda *a, **k: {"rows": 1, "affected": [(1, world["show"])]}
+    )
+    monkeypatch.setattr(jobs.indexing, "active_show_ids", lambda *a: [world["show"]])
+
+    def queued_index_jobs():
+        with session_scope() as session:
+            settings = load_settings(session)
+            jobs._sync_history(session, settings, Job(payload={}))
+            return session.scalars(select(Job).where(Job.type == "index_show")).all()
+
+    assert queued_index_jobs() == []
+    monkeypatch.setenv("AUTO_INDEX", "true")
+    assert len(queued_index_jobs()) == 1
