@@ -68,6 +68,7 @@ def world(tmp_path, fake_llm):
 def test_pages_render(client, world):
     for path in [
         "/",
+        "/upnext",
         "/library",
         "/activity",
         "/settings",

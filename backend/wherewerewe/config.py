@@ -59,6 +59,13 @@ class Settings(BaseSettings):
     summary_source: Literal["dialogue", "synopsis"] = "dialogue"
     allow_overview_only: bool = True  # summarize from the synopsis when there is no dialogue
 
+    # Sonarr (optional): Up Next can add a recommended show that isn't in Plex yet
+    sonarr_url: str = ""
+    sonarr_api_key: str = ""
+    sonarr_quality_profile: str = ""  # name; blank uses the first
+    sonarr_root_folder: str = ""  # path; blank uses the first
+    sonarr_search: bool = True  # search for episodes as soon as it's added
+
     # Notifications
     ntfy_url: str = ""
     ntfy_token: str = ""
@@ -149,6 +156,13 @@ RUNTIME_KEYS: dict[str, list[str]] = {
         "recap_cache_hours",
     ],
     "Notifications": ["ntfy_url", "ntfy_token", "discord_webhook_url"],
+    "Sonarr": [
+        "sonarr_url",
+        "sonarr_api_key",
+        "sonarr_quality_profile",
+        "sonarr_root_folder",
+        "sonarr_search",
+    ],
     "Security": ["admin_password", "plex_login"],
     "Schedule": [
         "sync_interval_minutes",
@@ -163,6 +177,7 @@ SECRET_KEYS = {
     "tautulli_api_key",
     "llm_api_key",
     "tmdb_api_key",
+    "sonarr_api_key",
     "ntfy_token",
     "webhook_secret",
     "discord_webhook_url",

@@ -108,6 +108,92 @@ class EpisodeCast(Base):
     fetched_at: Mapped[datetime] = mapped_column(DateTime, default=utcnow)
 
 
+class ShowMeta(Base):
+    """What Up Next knows about a show: Plex's library details, plus TMDB's when there's a key.
+
+    Show-level only (premise, genres, cast), never anything about later episodes.
+    """
+
+    __tablename__ = "show_meta"
+
+    show_id: Mapped[int] = mapped_column(
+        ForeignKey("shows.id", ondelete="CASCADE"), primary_key=True
+    )
+    summary: Mapped[str | None] = mapped_column(Text)
+    tagline: Mapped[str | None] = mapped_column(Text)
+    genres: Mapped[list[Any]] = mapped_column(JSON, default=list)
+    cast: Mapped[list[Any]] = mapped_column(JSON, default=list)
+    countries: Mapped[list[Any]] = mapped_column(JSON, default=list)
+    studio: Mapped[str | None] = mapped_column(String(255))
+    content_rating: Mapped[str | None] = mapped_column(String(32))
+    audience_rating: Mapped[float | None] = mapped_column(Float)
+    runtime_minutes: Mapped[int | None] = mapped_column(Integer)  # a typical episode
+    added_at: Mapped[datetime | None] = mapped_column(DateTime)  # to Plex
+    art_url: Mapped[str | None] = mapped_column(String(1024))  # Plex backdrop
+    colors: Mapped[list[Any]] = mapped_column(JSON, default=list)  # Plex UltraBlur corners
+    # From TMDB
+    tmdb_status: Mapped[str | None] = mapped_column(String(64))  # Ended, Canceled, Returning…
+    language: Mapped[str | None] = mapped_column(String(16))  # original language, e.g. "en"
+    keywords: Mapped[list[Any]] = mapped_column(JSON, default=list)
+    creators: Mapped[list[Any]] = mapped_column(JSON, default=list)
+    networks: Mapped[list[Any]] = mapped_column(JSON, default=list)
+    seasons_total: Mapped[int | None] = mapped_column(Integer)
+    episodes_total: Mapped[int | None] = mapped_column(Integer)
+    vote_average: Mapped[float | None] = mapped_column(Float)
+    vote_count: Mapped[int | None] = mapped_column(Integer)
+    tvdb_id: Mapped[int | None] = mapped_column(Integer)
+    # [{"tmdb_id", "rank", "kind": "rec" | "similar"}], TMDB's lists for this show
+    related: Mapped[list[Any]] = mapped_column(JSON, default=list)
+    plex_fetched_at: Mapped[datetime | None] = mapped_column(DateTime)
+    tmdb_fetched_at: Mapped[datetime | None] = mapped_column(DateTime)
+
+
+class TmdbTitle(Base):
+    """A show TMDB recommended that isn't in the Plex library (yet)."""
+
+    __tablename__ = "tmdb_titles"
+
+    tmdb_id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    name: Mapped[str] = mapped_column(String(512))
+    year: Mapped[int | None] = mapped_column(Integer)
+    overview: Mapped[str | None] = mapped_column(Text)
+    poster_path: Mapped[str | None] = mapped_column(String(255))
+    backdrop_path: Mapped[str | None] = mapped_column(String(255))
+    genres: Mapped[list[Any]] = mapped_column(JSON, default=list)
+    language: Mapped[str | None] = mapped_column(String(16))
+    vote_average: Mapped[float | None] = mapped_column(Float)
+    vote_count: Mapped[int | None] = mapped_column(Integer)
+    fetched_at: Mapped[datetime] = mapped_column(DateTime, default=utcnow)
+
+
+class Preference(Base):
+    """A viewer's say about a show: love, nope (not for me), seen (elsewhere), later (my list)."""
+
+    __tablename__ = "preferences"
+    __table_args__ = (UniqueConstraint("user_id", "show_id", "tmdb_id", "kind"),)
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    user_id: Mapped[int] = mapped_column(ForeignKey("users.id", ondelete="CASCADE"), index=True)
+    show_id: Mapped[int | None] = mapped_column(ForeignKey("shows.id", ondelete="CASCADE"))
+    tmdb_id: Mapped[int | None] = mapped_column(Integer)  # for shows not in the library
+    kind: Mapped[str] = mapped_column(String(16))
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=utcnow)
+
+
+class Pitch(Base):
+    """A model-written, spoiler-free "why you'd like this", kept so it's written once."""
+
+    __tablename__ = "pitches"
+    __table_args__ = (UniqueConstraint("user_id", "subject"),)
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    user_id: Mapped[int] = mapped_column(ForeignKey("users.id", ondelete="CASCADE"))
+    subject: Mapped[str] = mapped_column(String(64))  # "show:12" or "tmdb:1396"
+    text: Mapped[str] = mapped_column(Text)
+    model: Mapped[str] = mapped_column(String(255))
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=utcnow)
+
+
 class EpisodeSource(Base):
     __tablename__ = "episode_sources"
     __table_args__ = (UniqueConstraint("episode_id", "source_type"),)

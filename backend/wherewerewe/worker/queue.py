@@ -24,6 +24,7 @@ LANES: dict[str, str] = {
     "index_episode": "index",
     "rollup_season": "index",
     "backfill": "index",
+    "sync_meta": "meta",
 }
 
 

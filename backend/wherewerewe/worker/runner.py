@@ -109,6 +109,9 @@ class Worker:
 
             if settings.plex_url and due("sched_library", settings.library_scan_interval_minutes):
                 queue.enqueue(session, "sync_library", {}, dedupe_key="sync_library")
+            elif settings.plex_url and due("sched_meta", 24 * 60):
+                # Up Next's show details; a library scan also does this when it finishes.
+                queue.enqueue(session, "sync_meta", {}, dedupe_key="sync_meta")
             if (
                 settings.tautulli_url
                 and settings.tautulli_api_key

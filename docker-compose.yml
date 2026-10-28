@@ -22,6 +22,8 @@ services:
       - MEDIA_PATH_MAP=/data=/data/media
       - TMDB_API_KEY=
       - SUMMARY_SOURCE=dialogue # or synopsis: no GPU, from the TMDB/Plex synopsis
+      - SONARR_URL= # optional: Add to Sonarr from Up Next
+      - SONARR_API_KEY=
       - ADMIN_PASSWORD= # setting one turns login on
       - NTFY_URL=
     volumes:

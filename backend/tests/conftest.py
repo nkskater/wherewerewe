@@ -127,6 +127,8 @@ def isolated_db(tmp_path, monkeypatch):
         "SUMMARY_SOURCE",
         "AUTO_INDEX",
         "ADMIN_PASSWORD",
+        "SONARR_URL",
+        "SONARR_API_KEY",
     ):
         monkeypatch.delenv(var, raising=False)
     monkeypatch.setenv("WHISPER_ENABLED", "false")

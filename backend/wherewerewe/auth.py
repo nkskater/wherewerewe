@@ -155,12 +155,14 @@ PUBLIC = re.compile(r"^/(login|auth/|static/|webhooks/|favicon\.ico$|api/health/
 # Everything a viewer may reach; routes still check it's their own data.
 VIEWER = re.compile(
     r"^/($"
+    r"|upnext$"
     r"|recaps/\d+$"
     r"|shows/\d+/characters$"
     r"|api/me$"
     r"|api/users$"
-    r"|api/users/\d+(/shows)?$"
-    r"|api/shows/\d+(/poster|/characters|/whois)?$"
+    r"|api/users/\d+(/shows|/upnext|/upnext/item|/preferences|/pitch)?$"
+    r"|api/shows/\d+(/poster|/art|/characters|/whois)?$"
+    r"|api/tmdb/image/w\d+/[\w.-]+$"
     r"|api/recaps(/\d+)?$)"
 )
 

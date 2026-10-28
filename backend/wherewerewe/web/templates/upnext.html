@@ -1,0 +1,58 @@
+{% extends "base.html" %}
+{% block title %}Up Next · Where Were We{% endblock %}
+{% block page %}upnext{% endblock %}
+{% block toolbar %}
+<div class="tb-group">
+  <button class="tb-btn" id="surprise-btn" type="button" title="Pick something for me"><svg class="icon"><use href="#i-shuffle"/></svg><span>Surprise me</span></button>
+  {% if person.admin %}
+  <button class="tb-btn" id="details-btn" type="button" title="Read show details from Plex and TMDB again"><svg class="icon"><use href="#i-refresh"/></svg><span>Refresh</span></button>
+  {% endif %}
+</div>
+<div class="tb-group tb-right">
+  {% if person.admin %}
+  <div class="tb-menu" data-menu="with">
+    <button class="tb-btn" type="button"><svg class="icon"><use href="#i-users"/></svg><span>Watch with</span></button>
+    <ul class="menu" hidden></ul>
+  </div>
+  {% endif %}
+  <div class="tb-menu" data-menu="time">
+    <button class="tb-btn" type="button"><svg class="icon"><use href="#i-clock"/></svg><span>Time</span></button>
+    <ul class="menu" hidden>
+      <li><button data-value="any">Any length</button></li>
+      <li><button data-value="quick">Short episodes</button></li>
+      <li><button data-value="weekend">A weekend's worth</button></li>
+      <li><button data-value="long">Something long</button></li>
+    </ul>
+  </div>
+  <div class="tb-menu" data-menu="story">
+    <button class="tb-btn" type="button"><svg class="icon"><use href="#i-check"/></svg><span>Story</span></button>
+    <ul class="menu" hidden>
+      <li><button data-value="any">Any</button></li>
+      <li><button data-value="complete">Complete stories</button></li>
+      <li><button data-value="ongoing">Still going</button></li>
+    </ul>
+  </div>
+  <div class="tb-menu" data-menu="genre">
+    <button class="tb-btn" type="button"><svg class="icon"><use href="#i-filter"/></svg><span>Genre</span></button>
+    <ul class="menu menu-scroll" hidden><li><button data-value="">Any genre</button></li></ul>
+  </div>
+</div>
+{% endblock %}
+{% block content %}
+<p class="empty" id="un-status">Working out what's next…</p>
+<div class="filter-note" id="filter-note" hidden></div>
+<section class="hero" id="tonight" hidden></section>
+<details class="taste" id="taste" hidden>
+  <summary>Your taste <span class="muted" id="taste-line"></span></summary>
+  <div class="taste-body"></div>
+</details>
+<div id="lanes"></div>
+
+<div class="drawer-scrim" id="drawer-scrim" hidden></div>
+<aside class="drawer" id="drawer" aria-hidden="true" tabindex="-1">
+  <button class="icon-btn drawer-close" id="drawer-close" type="button" aria-label="Close">
+    <svg class="icon"><use href="#i-x"/></svg>
+  </button>
+  <div class="drawer-body"></div>
+</aside>
+{% endblock %}

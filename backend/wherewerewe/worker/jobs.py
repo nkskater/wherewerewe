@@ -11,7 +11,7 @@ from ..config import Settings
 from ..llm.client import get_llm
 from ..llm.rollup import build_rollup
 from ..models import Job, Recap
-from ..services import indexing, recaps, sync
+from ..services import indexing, meta, recaps, sync
 from . import queue
 
 log = logging.getLogger(__name__)
@@ -23,7 +23,21 @@ class PermanentError(RuntimeError):
 
 def _sync_library(session: Session, settings: Settings, job: Job) -> str:
     result = sync.sync_library(session, settings)
+    queue.enqueue(session, "sync_meta", {}, dedupe_key="sync_meta")
     return f"{result['shows']} shows, {result['episodes']} episodes"
+
+
+def _sync_meta(session: Session, settings: Settings, job: Job) -> str:
+    """Show details for Up Next: Plex's for every show, then TMDB's in batches."""
+    parts = []
+    if settings.plex_url and not job.payload.get("tmdb_only"):
+        parts.append(f"{meta.sync_plex_meta(session, settings)} shows from Plex")
+    done, left = meta.sync_tmdb_meta(session, settings)
+    if settings.tmdb_api_key:
+        parts.append(f"{done} from TMDB" + (f", {left} to go" if left else ""))
+    if left and done:
+        queue.enqueue(session, "sync_meta", {"tmdb_only": True}, priority=-1)
+    return ", ".join(parts) or "nothing to do"
 
 
 def _sync_history(session: Session, settings: Settings, job: Job) -> str:
@@ -108,6 +122,7 @@ def _backfill(session: Session, settings: Settings, job: Job) -> str:
 
 HANDLERS: dict[str, Callable[[Session, Settings, Job], str]] = {
     "sync_library": _sync_library,
+    "sync_meta": _sync_meta,
     "sync_history": _sync_history,
     "index_show": _index_show,
     "index_episode": _index_episode,

@@ -530,6 +530,386 @@ async function pageCharacters() {
   });
 }
 
+// ---- up next ---------------------------------------------------------------------------
+
+const REASON_ICONS = { related: "spark", creator: "spark", cast: "users", taste: "heart", household: "users",
+  quality: "check", fresh: "plus", new: "plus", recap: "text", pace: "play", season: "list", finish: "clock",
+  back: "clock", retry: "refresh", together: "users" };
+const PART_NAMES = { taste: "Fits your taste", related: "Related to what you liked", quality: "Rating",
+  household: "Popular here", fresh: "New on Plex" };
+const MARKS = [["love", "heart", "Love it"], ["later", "bookmark", "Save for later"],
+  ["seen", "eye", "Seen it already"], ["nope", "ban", "Not for me"]];
+
+function hm(minutes) {
+  if (!minutes) return "";
+  if (minutes < 60) return `${minutes} min`;
+  const h = Math.floor(minutes / 60), m = minutes % 60;
+  return m ? `${h} h ${m} m` : `${h} h`;
+}
+
+function factLine(item) {
+  const f = item.facts || {};
+  return [
+    f.seasons ? plural(f.seasons, "season") : null,
+    f.runtime ? `${f.runtime} min episodes` : null,
+    f.hours ? `${Math.round(f.hours)} h in all` : null,
+    f.status, f.rating ? `★ ${f.rating}` : null, f.content_rating,
+  ].filter(Boolean);
+}
+
+function artStyle(item) {
+  const c = item.colors || [];
+  return c.length >= 2 ? ` style="--c1:${escapeHtml(c[0])};--c2:${escapeHtml(c[2] || c[1])}"` : "";
+}
+
+function cardBadge(item) {
+  const p = item.progress;
+  if (p) {
+    if (p.new_season) return `<span class="un-badge new">New season</span>`;
+    if (p.all_new) return `<span class="un-badge new">${p.new_count} new</span>`;
+    if (p.recap) return `<span class="un-badge recap">Recap</span>`;
+    return `<span class="un-badge">${escapeHtml(p.next_code)}</span>`;
+  }
+  if (item.in_sonarr) return `<span class="un-badge">In Sonarr</span>`;
+  if (item.prefs.includes("later")) return `<span class="un-badge match">On your list</span>`;
+  return "";
+}
+
+function unCard(item) {
+  const p = item.progress;
+  const sub = p ? `${p.next_code}${p.next_title ? ` · ${p.next_title}` : ""}` : (item.reasons[0] || {}).text || factLine(item).slice(0, 2).join(" · ");
+  const why = p ? (item.reasons[0] || {}).text || "" : (item.reasons[1] || {}).text || "";
+  const saved = item.prefs.includes("later");
+  return `
+    <article class="un-card" data-key="${escapeHtml(item.key)}">
+      <button class="un-poster" type="button" data-open aria-label="${escapeHtml(item.title)}">
+        ${item.poster ? `<img alt="" loading="lazy" src="${escapeHtml(item.poster)}">` : ""}
+        <span class="poster-fallback">${escapeHtml(item.title)}</span>
+        ${cardBadge(item)}
+        ${p ? `<span class="un-progress" style="--pct:${Math.round(100 * p.watched / Math.max(1, p.total))}%"></span>` : ""}
+      </button>
+      <div class="un-quick">
+        ${item.play_url ? `<a class="icon-btn" href="${escapeHtml(item.play_url)}" target="_blank" rel="noopener" title="Play in Plex">${icon("play")}</a>` : ""}
+        <button class="icon-btn${saved ? " on" : ""}" type="button" data-mark="later" title="${saved ? "On your list" : "Save for later"}">${icon("bookmark")}</button>
+        <button class="icon-btn" type="button" data-mark="nope" title="Not for me">${icon("ban")}</button>
+      </div>
+      <div class="un-info">
+        <div class="un-title" title="${escapeHtml(item.title)}">${escapeHtml(item.title)}</div>
+        <div class="un-sub">${escapeHtml(sub)}</div>
+        ${why ? `<div class="un-why">${escapeHtml(why)}</div>` : ""}
+      </div>
+    </article>`;
+}
+
+async function pageUpnext() {
+  const status = $("#un-status");
+  const lanesEl = $("#lanes");
+  const hero = $("#tonight");
+  const drawer = $("#drawer");
+  const scrim = $("#drawer-scrim");
+  const uid = currentUserId();
+  if (!uid) {
+    status.innerHTML = 'No viewers yet. Connect Plex and Tautulli in <a href="/settings">Settings</a>, then press Sync.';
+    return;
+  }
+  const filters = {
+    time: store("www.un.time") || "any",
+    story: store("www.un.story") || "any",
+    genre: store("www.un.genre") || "",
+  };
+  let withUser = Number(store("www.un.with")) || null;
+  let data = null;
+  let items = new Map();
+  let heroIndex = 0;
+  let query = "";
+
+  initMenu("time", filters.time, (v) => { filters.time = store("www.un.time", v); load(); });
+  initMenu("story", filters.story, (v) => { filters.story = store("www.un.story", v); load(); });
+  if ($('.tb-menu[data-menu="with"]')) {
+    const others = users.filter((u) => u.id !== uid);
+    $('.tb-menu[data-menu="with"] .menu').innerHTML = '<li><button data-value="">Just me</button></li>' +
+      others.map((u) => `<li><button data-value="${u.id}">${escapeHtml(u.display_name)}</button></li>`).join("");
+    if (withUser && !others.some((u) => u.id === withUser)) withUser = null;
+    initMenu("with", withUser ? String(withUser) : "", (v) => {
+      withUser = Number(v) || null;
+      store("www.un.with", withUser ? String(withUser) : null);
+      load();
+    });
+  }
+  onSearch((q) => { query = q; renderLanes(); });
+
+  async function load() {
+    const params = new URLSearchParams({ time: filters.time, story: filters.story, genre: filters.genre });
+    if (withUser) params.set("with_user", withUser);
+    lanesEl.classList.add("loading");
+    try { data = await api(`/api/users/${uid}/upnext?${params}`); }
+    catch (err) { status.textContent = `Couldn't work out what's next: ${err.message}`; lanesEl.classList.remove("loading"); return; }
+    lanesEl.classList.remove("loading");
+    items = new Map();
+    for (const lane of data.lanes) for (const it of lane.items) if (!items.has(it.key)) items.set(it.key, it);
+    if (data.tonight) for (const it of [data.tonight.pick, ...data.tonight.others]) if (!items.has(it.key)) items.set(it.key, it);
+    genreMenu();
+    status.hidden = Boolean(data.lanes.length);
+    status.textContent = data.lanes.length ? "" : "Nothing to suggest yet. Watch something, then press Sync.";
+    const st = data.status;
+    const notes = [];
+    if (st.with_details < st.shows * 0.95) notes.push(`Still reading show details (${st.with_details} of ${st.shows}); picks get better as it goes.`);
+    else if (st.tmdb && st.with_tmdb < st.shows * 0.95) notes.push(`Reading TMDB details: ${st.with_tmdb} of ${st.shows} shows so far.`);
+    if (!st.tmdb) notes.push("Add a TMDB key in Settings for related-show picks and the Not in your library row.");
+    const active = [filters.time !== "any", filters.story !== "any", Boolean(filters.genre)].filter(Boolean).length;
+    if (active) notes.push(`${plural(active, "filter")} on: they shape the new-show rows, not what you're already watching.`);
+    $("#filter-note").hidden = !notes.length;
+    $("#filter-note").textContent = notes.join(" ");
+    heroIndex = 0;
+    renderHero();
+    renderTaste();
+    renderLanes();
+  }
+
+  function genreMenu() {
+    const list = $('.tb-menu[data-menu="genre"] .menu');
+    list.innerHTML = '<li><button data-value="">Any genre</button></li>' + data.genres.map((g) =>
+      `<li><button data-value="${escapeHtml(g.value)}">${escapeHtml(g.label)}</button></li>`).join("");
+    for (const b of $$("button", list)) b.setAttribute("aria-checked", String(b.dataset.value === filters.genre));
+  }
+  initMenu("genre", filters.genre, (v) => { filters.genre = store("www.un.genre", v || null) || ""; load(); });
+
+  const HERO_LABELS = { keep: "Pick up where you left off", new: "New episodes are waiting", start: "Something new" };
+
+  function renderHero() {
+    const t = data.tonight;
+    hero.hidden = !t;
+    if (!t) return;
+    const all = [t.pick, ...t.others];
+    const it = all[heroIndex % all.length];
+    const p = it.progress;
+    const nextLine = p
+      ? `${p.next_code}${p.next_title ? ` · ${p.next_title}` : ""}${p.next_minutes ? ` · ${p.next_minutes} min` : ""}`
+      : factLine(it).slice(0, 3).join(" · ");
+    hero.innerHTML = `
+      <div class="hero-bg"${artStyle(it)}>${it.art ? `<img alt="" src="${escapeHtml(it.art)}">` : ""}</div>
+      <div class="hero-body">
+        <div class="hero-poster">${it.poster ? `<img alt="" src="${escapeHtml(it.poster)}">` : ""}</div>
+        <div class="hero-text">
+          <div class="hero-eyebrow">${icon("spark")}Tonight · ${escapeHtml(HERO_LABELS[it.lane] || "")}</div>
+          <h1 class="hero-title">${escapeHtml(it.title)}</h1>
+          <div class="hero-line">${escapeHtml(nextLine)}</div>
+          <ul class="hero-reasons">${it.reasons.slice(0, 3).map((r) => `<li>${icon(REASON_ICONS[r.kind] || "spark")}${escapeHtml(r.text)}</li>`).join("")}</ul>
+          <div class="hero-actions">
+            ${it.play_url ? `<a class="btn btn-primary" href="${escapeHtml(it.play_url)}" target="_blank" rel="noopener">${icon("play")}${p ? `Play ${escapeHtml(p.next_code)}` : "Open in Plex"}</a>` : ""}
+            ${p && p.recap ? `<button class="btn" type="button" data-recap="${it.show_id}">${icon("text")}Recap first</button>` : ""}
+            <button class="btn" type="button" data-open-key="${escapeHtml(it.key)}">${icon("list")}Details</button>
+            ${all.length > 1 ? `<button class="btn btn-ghost" type="button" id="hero-next">${icon("refresh")}Something else</button>` : ""}
+          </div>
+        </div>
+      </div>`;
+    const next = $("#hero-next", hero);
+    if (next) next.addEventListener("click", () => { heroIndex += 1; renderHero(); });
+  }
+
+  function renderTaste() {
+    const el = $("#taste");
+    const t = data.taste;
+    el.hidden = !t.shows;
+    if (!t.shows) return;
+    const bits = [plural(t.shows, "show")];
+    if (t.finish_rate !== null) bits.push(`finishes ${t.finish_rate}%`);
+    $("#taste-line").textContent = `· ${bits.join(" · ")}`;
+    const kinds = { g: "Genre", k: "Theme", c: "Creator", n: "Network", a: "Actor" };
+    const top = t.tags.length ? t.tags[0].weight : 1;
+    const stats = [
+      ["Watched here", plural(t.shows, "show")],
+      ["Finished", `${t.finished}${t.finish_rate !== null ? ` (${t.finish_rate}% of what you start)` : ""}`],
+      ["Watching now", t.watching],
+      ["Dropped early", `${t.dropped}${t.drops_genre ? `, mostly ${t.drops_genre}` : ""}`],
+      ["Usual pace", t.pace ? `${t.pace} episodes a day when you're into something` : "—"],
+    ];
+    $(".taste-body", el).innerHTML = `
+      <div class="taste-tags">${t.tags.map((g) => `<span class="taste-tag" style="--w:${(0.35 + 0.65 * g.weight / top).toFixed(2)}" title="${kinds[g.kind] || ""}"><small>${kinds[g.kind] || ""}</small>${escapeHtml(g.label)}</span>`).join("")}</div>
+      <dl class="taste-stats">${stats.map(([k, v]) => `<dt>${k}</dt><dd>${escapeHtml(String(v))}</dd>`).join("")}</dl>
+      <p class="hint">Built from what you finish, binge and drop. Love it / Not for me on any show tunes it.</p>`;
+  }
+
+  function renderLanes() {
+    const match = (it) => !query || it.title.toLowerCase().includes(query);
+    lanesEl.innerHTML = data.lanes.map((lane) => {
+      const list = lane.items.filter(match);
+      if (!list.length) return "";
+      return `
+        <section class="lane" data-lane="${lane.key}">
+          <header class="lane-head">
+            <h2>${escapeHtml(lane.title)} <span class="lane-count">${list.length}</span></h2>
+            <span class="lane-sub">${escapeHtml(lane.subtitle)}</span>
+            <span class="lane-nav">
+              <button class="icon-btn" type="button" data-scroll="-1" aria-label="Back">${icon("chevron-left")}</button>
+              <button class="icon-btn" type="button" data-scroll="1" aria-label="More">${icon("chevron-right")}</button>
+            </span>
+          </header>
+          <div class="lane-row">${list.map(unCard).join("")}</div>
+        </section>`;
+    }).join("");
+    for (const img of $$("img", lanesEl)) img.addEventListener("error", () => img.remove());
+  }
+
+  // ---- details drawer ----
+
+  let open = null;
+  function openDrawer(key, eyebrow = "") {
+    const it = items.get(key);
+    if (!it) return;
+    open = key;
+    const p = it.progress;
+    const f = it.facts || {};
+    const parts = it.parts ? Object.entries(it.parts).filter(([k]) => PART_NAMES[k]) : [];
+    const marks = MARKS.map(([kind, ic, label]) => `<button class="mark${it.prefs.includes(kind) ? " on" : ""}" type="button" data-mark="${kind}">${icon(ic)}${label}</button>`).join("");
+    const reasonList = it.reasons.length
+      ? `<ul class="why">${it.reasons.map((r) => `<li>${icon(REASON_ICONS[r.kind] || "spark")}<span>${escapeHtml(r.text)}</span></li>`).join("")}</ul>` : "";
+    const progressBlock = p ? `
+      <div class="d-progress">
+        ${progressBar(p.watched, p.total, p.recap ? "warning" : "")}
+        <p>${p.last_code ? `Last watched ${escapeHtml(p.last_code)}, ${p.days_since === 0 ? "today" : plural(p.days_since, "day") + " ago"}. ` : ""}Next is <b>${escapeHtml(p.next_code)}</b>${p.next_title ? ` · ${escapeHtml(p.next_title)}` : ""}.
+        ${p.left_in_season > 1 ? `${p.left_in_season} episodes (${hm(p.season_minutes)}) left in the season.` : ""}
+        ${p.finish_days ? `At your pace, done in about ${plural(p.finish_days, "day")}.` : ""}</p>
+      </div>` : "";
+    $(".drawer-body", drawer).innerHTML = `
+      <div class="d-head"${artStyle(it)}>
+        ${it.art ? `<img class="d-art" alt="" src="${escapeHtml(it.art)}">` : ""}
+        <div class="d-head-inner">
+          ${it.poster ? `<img class="d-poster" alt="" src="${escapeHtml(it.poster)}">` : ""}
+          <div>
+            ${eyebrow ? `<div class="hero-eyebrow">${icon("shuffle")}${escapeHtml(eyebrow)}</div>` : ""}
+            <h2 class="d-title">${escapeHtml(it.title)}${it.year ? ` <span class="muted">(${it.year})</span>` : ""}</h2>
+            <div class="labels">${factLine(it).map((x) => `<span class="label">${escapeHtml(x)}</span>`).join("")}</div>
+          </div>
+        </div>
+      </div>
+      <div class="d-section d-actions">
+        ${it.play_url ? `<a class="btn btn-primary" href="${escapeHtml(it.play_url)}" target="_blank" rel="noopener">${icon("play")}${p ? `Play ${escapeHtml(p.next_code)}` : "Open in Plex"}</a>` : ""}
+        ${p ? `<button class="btn" type="button" data-recap="${it.show_id}">${icon("text")}Recap</button>
+               <a class="btn" href="/shows/${it.show_id}/characters?user=${uid}">${icon("users")}Characters</a>` : ""}
+        ${!it.in_library && data.can_add && !it.in_sonarr ? `<button class="btn btn-primary" type="button" data-sonarr="${it.tmdb_id}">${icon("plus")}Add to Sonarr</button>` : ""}
+        ${!it.in_library && it.in_sonarr ? `<span class="label label-success">In Sonarr</span>` : ""}
+        ${it.tmdb_id ? `<a class="btn btn-ghost" href="https://www.themoviedb.org/tv/${it.tmdb_id}" target="_blank" rel="noopener">${icon("external")}TMDB</a>` : ""}
+      </div>
+      ${progressBlock}
+      ${it.tagline ? `<p class="d-tagline">${escapeHtml(it.tagline)}</p>` : ""}
+      ${it.overview ? `<p class="d-overview">${escapeHtml(it.overview)}</p>` : ""}
+      ${(it.warnings || []).map((w) => `<div class="alert alert-warning">${escapeHtml(w)}</div>`).join("")}
+      ${reasonList ? `<div class="d-section"><h3>Why it's here</h3>${reasonList}</div>` : ""}
+      ${parts.length ? `<div class="d-section"><h3>What scored it${it.match !== null && it.match !== undefined ? ` <span class="muted">· fits you better than ${Math.min(99, it.match)}% of your library</span>` : ""}</h3>
+        <div class="parts">${parts.map(([k, v]) => `<div class="part"><span>${PART_NAMES[k]}</span><span class="part-bar"><span style="width:${Math.round(100 * Math.max(0, Math.min(1, v)))}%"></span></span></div>`).join("")}</div></div>` : ""}
+      <div class="d-section"><h3>Why would I like it?</h3>
+        <p class="pitch muted" id="pitch">A short, spoiler-free pitch written for you by the language model.</p>
+        <button class="btn btn-small" type="button" id="pitch-btn">${icon("spark")}Write one</button></div>
+      <div class="d-section"><h3>Your say</h3><div class="marks">${marks}</div></div>`;
+    for (const img of $$("img", drawer)) img.addEventListener("error", () => img.remove());
+    $("#pitch-btn", drawer).addEventListener("click", (e) => pitch(e.currentTarget, it));
+    drawer.classList.add("open");
+    drawer.setAttribute("aria-hidden", "false");
+    scrim.hidden = false;
+    drawer.scrollTop = 0;
+    drawer.focus();
+  }
+
+  function closeDrawer() {
+    open = null;
+    drawer.classList.remove("open");
+    drawer.setAttribute("aria-hidden", "true");
+    scrim.hidden = true;
+  }
+
+  async function pitch(btn, it) {
+    const out = $("#pitch", drawer);
+    btn.disabled = true;
+    out.classList.remove("muted");
+    out.innerHTML = '<span class="spinner"></span> Thinking about what you like…';
+    try {
+      const res = await api(`/api/users/${uid}/pitch`, { method: "POST", body: { key: it.key } });
+      out.textContent = res.text;
+      btn.hidden = true;
+    } catch (err) {
+      out.textContent = `Couldn't write one: ${err.message}`;
+      btn.disabled = false;
+    }
+  }
+
+  async function mark(key, kind, btn) {
+    const it = items.get(key);
+    if (!it) return;
+    const on = !it.prefs.includes(kind);
+    if (btn) btn.disabled = true;
+    try {
+      const res = await api(`/api/users/${uid}/preferences`, { method: "PUT", body: { key, kind, on } });
+      it.prefs = res.prefs;
+      if (kind === "nope" && on) {
+        for (const card of $$(`.un-card[data-key="${CSS.escape(key)}"]`)) card.classList.add("gone");
+        if (open === key) closeDrawer();
+      }
+      if (open === key) openDrawer(key);
+      for (const b of $$(`.un-card[data-key="${CSS.escape(key)}"] [data-mark="later"]`)) b.classList.toggle("on", it.prefs.includes("later"));
+      clearTimeout(mark.reload);
+      mark.reload = setTimeout(() => { if (!open) load(); }, 4000);  // marks retune the picks
+    } catch (err) { alert(err.message); }
+    if (btn) btn.disabled = false;
+  }
+
+  document.querySelector(".content").addEventListener("click", async (e) => {
+    const t = e.target;
+    const scroll = t.closest("[data-scroll]");
+    if (scroll) {
+      const row = $(".lane-row", scroll.closest(".lane"));
+      row.scrollBy({ left: Number(scroll.dataset.scroll) * row.clientWidth * 0.9, behavior: "smooth" });
+      return;
+    }
+    const recap = t.closest("[data-recap]");
+    if (recap) { startRecap(recap, { show_id: Number(recap.dataset.recap), user_id: uid, length: getLength() }); return; }
+    const sonarr = t.closest("[data-sonarr]");
+    if (sonarr) {
+      sonarr.disabled = true;
+      try {
+        const res = await api("/api/sonarr/add", { method: "POST", body: { tmdb_id: Number(sonarr.dataset.sonarr) } });
+        sonarr.outerHTML = `<span class="label label-success">${res.added ? "Added to Sonarr" : "Already in Sonarr"}</span>`;
+        const it = items.get(open);
+        if (it) it.in_sonarr = true;
+      } catch (err) { alert(`Sonarr: ${err.message}`); sonarr.disabled = false; }
+      return;
+    }
+    const markBtn = t.closest("[data-mark]");
+    if (markBtn) {
+      const key = open && drawer.contains(markBtn) ? open : markBtn.closest("[data-key]").dataset.key;
+      mark(key, markBtn.dataset.mark, markBtn);
+      return;
+    }
+    const opener = t.closest("[data-open], [data-open-key]");
+    if (opener) openDrawer(opener.dataset.openKey || opener.closest("[data-key]").dataset.key);
+  });
+  $("#drawer-close").addEventListener("click", closeDrawer);
+  scrim.addEventListener("click", closeDrawer);
+  document.addEventListener("keydown", (e) => { if (e.key === "Escape" && open) closeDrawer(); });
+
+  $("#surprise-btn").addEventListener("click", () => {
+    const lane = data && (data.lanes.find((l) => l.key === "start") || data.lanes.find((l) => l.key === "retry"));
+    if (!lane) return;
+    const pool = lane.items.slice(0, 15);
+    const weights = pool.map((it) => Math.max(0.01, it.score) ** 2);
+    let r = Math.random() * weights.reduce((a, b) => a + b, 0);
+    let pick = pool[0];
+    for (let i = 0; i < pool.length; i++) { r -= weights[i]; if (r <= 0) { pick = pool[i]; break; } }
+    openDrawer(pick.key, "Surprise pick");
+  });
+  const detailsBtn = $("#details-btn");
+  if (detailsBtn) {
+    detailsBtn.addEventListener("click", async () => {
+      detailsBtn.disabled = true;
+      detailsBtn.classList.add("busy");
+      try { await api("/api/upnext/refresh", { method: "POST" }); refreshQueueBadge(); }
+      catch (err) { alert(err.message); }
+      setTimeout(() => { detailsBtn.disabled = false; detailsBtn.classList.remove("busy"); load(); }, 8000);
+    });
+  }
+  await load();
+}
+
 // ---- library ---------------------------------------------------------------------------
 
 async function pageLibrary() {
@@ -584,7 +964,7 @@ async function pageLibrary() {
 
 // ---- activity --------------------------------------------------------------------------
 
-const JOB_NAMES = { sync_library: "Library scan", sync_history: "Watch history sync", index_show: "Index show",
+const JOB_NAMES = { sync_meta: "Show details", sync_library: "Library scan", sync_history: "Watch history sync", index_show: "Index show",
   index_episode: "Index episode", rollup_season: "Season summary", generate_recap: "Recap", backfill: "Nightly catch-up" };
 
 async function pageActivity() {
@@ -631,7 +1011,7 @@ async function pageActivity() {
 
 async function pageSystem() {
   const tbody = $("#health-table tbody");
-  const names = { database: "Database", plex: "Plex", tautulli: "Tautulli", llm: "Language model", ffmpeg: "ffmpeg",
+  const names = { database: "Database", plex: "Plex", tautulli: "Tautulli", llm: "Language model", sonarr: "Sonarr", ffmpeg: "ffmpeg",
     whisper: "Whisper", queue: "Queue" };
   const load = async () => {
     try {
@@ -648,7 +1028,7 @@ async function pageSystem() {
 // ---- settings --------------------------------------------------------------------------
 
 const GROUP_NAMES = { Connections: "Servers", Model: "Language model", Sources: "Dialogue",
-  Recaps: "Recaps", Notifications: "Notifications", Security: "Security", Schedule: "Schedule" };
+  Recaps: "Recaps", Notifications: "Notifications", Sonarr: "Sonarr", Security: "Security", Schedule: "Schedule" };
 const FIELD_LABELS = {
   plex_url: ["Plex server", "e.g. https://192.168.1.100:32400"],
   plex_token: ["Plex token"],
@@ -657,7 +1037,7 @@ const FIELD_LABELS = {
   tautulli_api_key: ["Tautulli API key"],
   verify_ssl: ["Check TLS certificates", "turn off for Plex over https by IP"],
   media_path_map: ["Media path mapping", "plex path=path here; separate pairs with ;"],
-  tmdb_api_key: ["TMDB API key", "optional synopses"],
+  tmdb_api_key: ["TMDB API key", "synopses, cast, and Up Next's related shows"],
   public_url: ["This app's address", "used in notification links"],
   webhook_secret: ["Webhook secret", "optional ?token= for the webhook"],
   llm_base_url: ["Model endpoint", "Ollama or any OpenAI-compatible URL"],
@@ -681,6 +1061,11 @@ const FIELD_LABELS = {
   ntfy_url: ["ntfy topic URL"],
   ntfy_token: ["ntfy token"],
   discord_webhook_url: ["Discord webhook"],
+  sonarr_url: ["Sonarr", "optional; e.g. http://192.168.1.100:8989, for Add to Sonarr in Up Next"],
+  sonarr_api_key: ["Sonarr API key", "Sonarr → Settings → General"],
+  sonarr_quality_profile: ["Quality profile", "name; blank uses the first"],
+  sonarr_root_folder: ["Root folder", "path; blank uses the first"],
+  sonarr_search: ["Search right away", "for episodes as soon as a show is added"],
   sync_interval_minutes: ["Check watch history every", "minutes"],
   library_scan_interval_minutes: ["Rescan the library every", "minutes"],
   admin_password: ["Admin password", "setting one turns login on"],
@@ -829,7 +1214,7 @@ function initLogout() {
   initSearch();
   refreshQueueBadge();
   await initUsers();
-  const pages = { home: pageHome, recap: pageRecap, characters: pageCharacters, library: pageLibrary,
+  const pages = { home: pageHome, upnext: pageUpnext, recap: pageRecap, characters: pageCharacters, library: pageLibrary,
     activity: pageActivity, system: pageSystem, settings: pageSettings };
   const fn = pages[document.body.dataset.page];
   if (fn) await fn();

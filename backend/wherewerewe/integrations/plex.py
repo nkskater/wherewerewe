@@ -88,6 +88,11 @@ class PlexClient:
         data = self._get(f"/library/sections/{section_key}/all", type=2, includeGuids=1)
         return [self._parse_show(m) for m in data.get("Metadata", [])]
 
+    def shows_raw(self, section_key: str) -> list[dict]:
+        """The section's shows with everything Plex lists (genres, cast, ratings, art)."""
+        data = self._get(f"/library/sections/{section_key}/all", type=2, includeGuids=1)
+        return data.get("Metadata", [])
+
     def show(self, rating_key: str) -> PlexShow | None:
         data = self._get(f"/library/metadata/{rating_key}", includeGuids=1)
         items = data.get("Metadata", [])
@@ -121,8 +126,12 @@ class PlexClient:
             )
         return out
 
-    def image(self, path: str, width: int | None = None) -> tuple[bytes, str]:
-        """Fetch artwork, resized by Plex's photo transcoder when a width is given."""
+    def image(
+        self, path: str, width: int | None = None, height: int | None = None
+    ) -> tuple[bytes, str]:
+        """Fetch artwork, resized by Plex's photo transcoder when a width is given.
+
+        The height defaults to a poster's 2:3."""
         if width:
             try:
                 return self._fetch_image(
@@ -130,7 +139,7 @@ class PlexClient:
                     {
                         "url": path,
                         "width": width,
-                        "height": width * 3 // 2,
+                        "height": height or width * 3 // 2,
                         "minSize": 1,
                         "upscale": 1,
                     },

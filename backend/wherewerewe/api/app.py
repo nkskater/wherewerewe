@@ -15,7 +15,7 @@ from fastapi.templating import Jinja2Templates
 
 from .. import __version__, auth
 from ..db import create_all, load_settings, session_scope
-from . import auth_routes, routes, webhooks
+from . import auth_routes, routes, upnext_routes, webhooks
 
 WEB_DIR = Path(__file__).resolve().parent.parent / "web"
 templates = Jinja2Templates(directory=str(WEB_DIR / "templates"))
@@ -56,6 +56,7 @@ async def lifespan(_app: FastAPI):
 def create_app() -> FastAPI:
     app = FastAPI(title="Where Were We", version=__version__, lifespan=lifespan)
     app.include_router(routes.router)
+    app.include_router(upnext_routes.router)
     app.include_router(auth_routes.router)
     app.include_router(webhooks.router)
 
@@ -113,7 +114,7 @@ def create_app() -> FastAPI:
         methods=["GET"],
         include_in_schema=False,
     )
-    for name in ("library", "activity", "settings", "system"):
+    for name in ("upnext", "library", "activity", "settings", "system"):
         app.add_api_route(
             f"/{name}", page(f"{name}.html"), methods=["GET"], include_in_schema=False
         )

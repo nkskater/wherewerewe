@@ -199,3 +199,18 @@ and that the rest hasn't been shown yet."""
 
 def whois_user(question: str, notes: str) -> str:
     return f"Character notes, oldest first:\n\n{notes}\n\nQuestion: {question}"
+
+
+PITCH_SYSTEM = """You help one person decide what to watch next. Write 2-3 sentences, \
+to them, on why they might enjoy this show, connecting it to shows they liked. Use only the \
+premise given: no twists, deaths, reveals, or anything past the setup. Don't invent facts \
+about the show, its cast, or awards. No lists, no headings, no preamble, and don't start with \
+the show's title."""
+
+
+def pitch_user(title: str, premise: str, details: str, liked: list[str], reasons: list[str]) -> str:
+    return (
+        f"Show: {title}\n{details}\nPremise: {premise}\n\n"
+        f"Shows they finished or loved: {', '.join(liked) or 'none yet'}\n"
+        f"Why it was picked for them: {'; '.join(reasons) or 'a good fit for the library'}"
+    )

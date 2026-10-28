@@ -24,6 +24,7 @@ from ..llm.ledger import ledger_as_of, ledger_notes
 from ..models import Episode, Job, Recap, Setting, Show, User, WatchProgress
 from ..services.indexing import actors_as_of, played_by, show_stats
 from ..services.library import episode_by_code, regular_episodes
+from ..services.meta import sonarr_client
 from ..services.progress import boundary_episode, shows_in_progress
 from ..services.recaps import RecapRequestError, create_recap
 from ..services.sync import plex_client, tautulli_client
@@ -686,6 +687,8 @@ def health(session: Session = Depends(get_session)) -> dict:
     checks["plex"] = _check(plex)
     checks["tautulli"] = _check(tautulli)
     checks["llm"] = _check(lambda: get_llm(settings).ping())
+    if settings.sonarr_url:
+        checks["sonarr"] = _check(lambda: sonarr_check(settings))
     checks["ffmpeg"] = {
         "ok": extract.ffmpeg_available(),
         "detail": "ok" if extract.ffmpeg_available() else "not installed",
@@ -708,6 +711,14 @@ def health(session: Session = Depends(get_session)) -> dict:
         ),
         "checks": checks,
     }
+
+
+def sonarr_check(settings: Settings) -> str:
+    client = sonarr_client(settings)
+    try:
+        return client.check()
+    finally:
+        client.close()
 
 
 @router.get("/health/live")
